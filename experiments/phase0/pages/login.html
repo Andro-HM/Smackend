@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Private notes sign in</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/assets/lab.css">
+<main>
+  <h1>Private notes</h1>
+  <p>Use a disposable account. Username recovery is unavailable in this lab.</p>
+  <form id="credentials">
+    <label>Username <input name="username" required autocomplete="username"></label>
+    <label>Password <input name="password" type="password" required autocomplete="current-password"></label>
+    <button value="login">Sign in</button>
+    <button value="signup">Register</button>
+  </form>
+  <p id="status" role="status"></p>
+  <a href="/notes/">Continue to notes</a>
+</main>
+<script type="module" src="/assets/login.js"></script>

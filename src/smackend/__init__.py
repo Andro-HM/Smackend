@@ -1,0 +1,1 @@
+"""Smackend project tooling."""

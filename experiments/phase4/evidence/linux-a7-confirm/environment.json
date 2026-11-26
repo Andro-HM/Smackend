@@ -1,0 +1,20 @@
+{
+  "release": "0.1.0a7",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python": "3.12.3",
+  "postgres": 160015,
+  "logical_cpus": 12,
+  "machine_ram": 8190636032,
+  "workers": 2,
+  "pool_per_worker": 8,
+  "users_seeded": 1000,
+  "rows_per_user": 100,
+  "app_startup_ms": 1427.9474559998562,
+  "provider_startup_ms": 364.3175910001446,
+  "fixture_seconds": 28.571891092999977,
+  "profile": true,
+  "hold_outbound": false,
+  "auth_ip_budget_override": null,
+  "reuse_outbound": false,
+  "driver_sha256": "2632023df06770d2baed554cae32ae1053d4a0418aa4d771fc0206c9a26f3786"
+}

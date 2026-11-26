@@ -1,0 +1,16 @@
+[project]
+name = "__PROJECT_NAME__"
+version = "0.1.0"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "smackend[__SMACKEND_EXTRAS__]==__SMACKEND_VERSION__",
+    "django==5.2.19",
+    "django-ninja==1.8.0",
+    "psycopg[binary,pool]==3.3.9",
+    "psycopg-pool==3.3.3",
+    "python-dotenv==1.2.4",
+    "uvicorn==0.54.0",
+]
+
+[tool.uv]
+package = false

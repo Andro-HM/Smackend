@@ -1,0 +1,17 @@
+{
+  "release": "0.1.0a7",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python": "3.12.3",
+  "postgres": 160015,
+  "logical_cpus": 12,
+  "machine_ram": 8190640128,
+  "workers": 2,
+  "pool_per_worker": 8,
+  "users_seeded": 30,
+  "rows_per_user": 30,
+  "app_startup_ms": 15876.045983999973,
+  "provider_startup_ms": 3817.1846250000385,
+  "fixture_seconds": 115.932178077,
+  "profile": false,
+  "hold_outbound": false
+}

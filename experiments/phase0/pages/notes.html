@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>My private notes</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/assets/lab.css">
+<main>
+  <h1>My private notes</h1>
+  <p id="status" role="status"></p>
+  <a href="/">Account page</a>
+  <button id="logout">Sign out</button>
+  <form id="editor">
+    <label>Title <input name="title" required maxlength="80"></label>
+    <label>Body <textarea name="body" maxlength="4000"></textarea></label>
+    <button>Save note</button>
+    <button id="cancel" type="button">Cancel edit</button>
+  </form>
+  <ul id="notes"></ul>
+  <button id="provider">Try simulated provider</button>
+</main>
+<script type="module" src="/assets/notes.js"></script>

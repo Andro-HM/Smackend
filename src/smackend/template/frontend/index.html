@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>__PROJECT_NAME__</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script defer src="/assets/app.js"></script>
+</head>
+<body>
+  <main>
+    <h1>__PROJECT_NAME__</h1>
+    <p id="status" role="status">Checking the application and database…</p>
+    <button id="check" type="button">Check again</button>
+    <a href="/api/docs">API documentation</a>
+    {% if accounts_enabled %}<a href="/account/">Account</a>{% endif %}
+    {% if assist_enabled %}<a href="/assist/">AI and real-time examples</a>{% endif %}
+  </main>
+</body>
+</html>

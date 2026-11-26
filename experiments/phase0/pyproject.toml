@@ -1,0 +1,28 @@
+[project]
+name = "smackend-foundation-experiment"
+version = "0.0.1"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "django[argon2]>=5.2,<5.3",
+    "django-ninja>=1.6,<2",
+    "django-allauth[headless]>=65.13,<66",
+    "psycopg[binary,pool]>=3.2,<4",
+    "uvicorn>=0.35,<1",
+    "httpx>=0.28,<1",
+    "python-dotenv>=1,<2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8,<10",
+    "pytest-django>=4.11,<5",
+    "locust>=2.37,<3",
+    "psutil>=7,<8",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "lab.settings"
+testpaths = ["tests"]

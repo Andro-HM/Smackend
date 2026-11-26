@@ -1,0 +1,14 @@
+{
+  "required_records": 100000,
+  "owned_records": 100000,
+  "incorrect_owner_labels": 0,
+  "required_assets": 1000,
+  "assets": 1000,
+  "inconsistent_assets": 0,
+  "missing_files": 0,
+  "leftover_create_delete_records": 0,
+  "socket_leases_at_end": 0,
+  "quiet_read_execution_ms": 0.048,
+  "quiet_read_planning_ms": 0.1,
+  "correct": true
+}

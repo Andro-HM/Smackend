@@ -1,0 +1,17 @@
+{
+  "release": "0.1.0a7",
+  "platform": "Windows-10-10.0.26300-SP0",
+  "python": "3.11.9",
+  "postgres": 170009,
+  "logical_cpus": 12,
+  "machine_ram": 16905977856,
+  "workers": 2,
+  "pool_per_worker": 8,
+  "users_seeded": 1000,
+  "rows_per_user": 100,
+  "app_startup_ms": 6140.999999828637,
+  "provider_startup_ms": 1358.9999999385327,
+  "fixture_seconds": 87.67200000002049,
+  "profile": true,
+  "hold_outbound": true
+}

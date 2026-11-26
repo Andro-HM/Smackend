@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=77,<83"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smackend"
+version = "0.1.0a8"
+description = "Reusable infrastructure for ordinary Django and PostgreSQL projects"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11,<3.13"
+dependencies = []
+
+[project.scripts]
+smackend = "smackend.cli:main"
+
+[project.optional-dependencies]
+backend = ["django>=5.2,<5.3", "django-ninja>=1.8,<2", "psycopg[binary,pool]>=3.3,<4"]
+auth = ["django[argon2]>=5.2,<5.3", "django-allauth[headless,headless-spec,socialaccount]==65.22.1"]
+storage = ["Pillow>=13,<14"]
+s3 = ["django-storages[s3]>=1.14.6,<2"]
+http = ["httpx>=0.28,<0.29"]
+ai = ["httpx>=0.28,<0.29", "jsonschema>=4.25,<5"]
+realtime = ["channels>=4.3,<5", "websockets>=15,<17"]
+
+[dependency-groups]
+dev = ["pytest>=9,<10", "django==5.2.19", "python-dotenv==1.2.4"]
+integration = ["moto[s3]==5.2.6", "uvicorn==0.54.0"]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools.package-data]
+smackend = ["template/*", "template/config/*", "template/frontend/*", "template/accounts/*.py", "template/accounts/migrations/*.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

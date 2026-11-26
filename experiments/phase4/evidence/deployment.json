@@ -1,0 +1,112 @@
+{
+  "postgres_verify_full": true,
+  "postgres_bad_hostname_rejected": true,
+  "secure_cookies_and_csrf": true,
+  "database_and_file_restore": true,
+  "worker_replacement_ms": 108.14871399998083,
+  "outage_samples": [
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ],
+    [
+      200,
+      503
+    ]
+  ],
+  "recovery_after_database_started_ms": 466.8451009999899,
+  "interrupted_write": "rolled back",
+  "committed_write": "preserved"
+}

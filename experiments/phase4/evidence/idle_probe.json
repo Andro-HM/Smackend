@@ -1,0 +1,24 @@
+{
+  "disabled": {
+    "boot_ms": 1126.735194000048,
+    "connection_peak": 1,
+    "app": {
+      "peak_rss_mib": 169.25,
+      "peak_threads": 10,
+      "sampled_cpu_s": 0.03,
+      "warm_median_rss_mib": null,
+      "last_5min_median_rss_mib": null
+    }
+  },
+  "combined": {
+    "boot_ms": 1364.1878900000393,
+    "connection_peak": 1,
+    "app": {
+      "peak_rss_mib": 187.3,
+      "peak_threads": 10,
+      "sampled_cpu_s": 0.04,
+      "warm_median_rss_mib": null,
+      "last_5min_median_rss_mib": null
+    }
+  }
+}

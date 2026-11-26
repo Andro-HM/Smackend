@@ -1,0 +1,5 @@
+include tests/database_probe.py tests/identity_probe.py tests/identity_browser.js
+include tests/modules_probe.py tests/modules_browser.js
+include tests/phase3_probe.py tests/phase3_browser.js
+include PHASE_1.md PHASE_2A.md PHASE_2.md PHASE_3.md PHASE_4.md ROADMAP.md
+include ARCHITECTURE.md FRAMEWORK_EVALUATION.md CHANGELOG.md CONTRIBUTING.md SECURITY.md LICENSING.md

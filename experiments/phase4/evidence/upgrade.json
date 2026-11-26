@@ -1,0 +1,13 @@
+{
+  "upgrade": "a7 -> a8",
+  "existing_session": true,
+  "existing_data": true,
+  "verified": [
+    "PASS Configuration",
+    "PASS Django system checks",
+    "PASS PostgreSQL connectivity",
+    "PASS Model migration drift",
+    "PASS Applied migrations",
+    "PASS Application and core tests"
+  ]
+}

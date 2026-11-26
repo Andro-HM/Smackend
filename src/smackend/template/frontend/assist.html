@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI and real-time examples</title>
+<link rel="stylesheet" href="/assets/styles.css">
+<script defer src="/assets/assist.js"></script>
+<main>
+  <h1>AI and real-time examples</h1>
+  <a href="/account/">Sign in to use these examples</a>
+  {% if chat_enabled %}
+  <form id="chat">
+    <label for="prompt">Message</label>
+    <textarea id="prompt" maxlength="16000" required></textarea>
+    <label for="attachment">Optional image or PDF</label>
+    <input id="attachment" type="file" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf">
+    <label><input id="stream" type="checkbox"> Stream the response</label>
+    <button>Send</button><button id="cancel" type="button">Cancel</button>
+  </form>
+  <p id="answer" role="status" style="white-space: pre-wrap"></p>
+  {% endif %}
+  {% if realtime_enabled %}
+  <form id="echo">
+    <label>WebSocket message <input id="echo-text" maxlength="1000" required></label>
+    <button>Send over WebSocket</button>
+  </form>
+  <p id="echo-answer" role="status"></p>
+  {% endif %}
+  {% if voice_enabled %}
+  <button id="start-voice" type="button">Start voice</button>
+  <button id="end-voice" type="button">End microphone input</button>
+  <button id="stop-voice" type="button">Disconnect voice</button>
+  <p id="voice-status" role="status"></p>
+  {% endif %}
+</main>
+</html>

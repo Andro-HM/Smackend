@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+.venv/
+.uv-cache/
+.pytest_cache/
+.playwright-cli/
+__pycache__/
+.local/
+results/local/

@@ -1,0 +1,32 @@
+[
+  {
+    "app": "shop",
+    "initial_seconds": 12.15,
+    "extension_seconds": 14.54,
+    "initial_verify": "PASS Configuration\nPASS Django system checks\nPASS PostgreSQL connectivity\nPASS Model migration drift\nPASS Applied migrations\nPASS Application and core tests",
+    "migration_drift": "PASS Configuration\nPASS Django system checks\nPASS PostgreSQL connectivity\nFAIL Model migration drift. Run python manage.py makemigrations --check --dry-run and review the changes.",
+    "extension_verify": "PASS Configuration\nPASS Django system checks\nPASS PostgreSQL connectivity\nPASS Model migration drift\nPASS Applied migrations\nPASS Application and core tests",
+    "negative_control": "Negative ownership control ran in the expense project."
+  },
+  {
+    "app": "document",
+    "initial_seconds": 12.29,
+    "extension_seconds": 15.69,
+    "initial_verify": "PASS Configuration\nPASS Django system checks\nPASS PostgreSQL connectivity\nPASS Model migration drift\nPASS Applied migrations\nPASS Application and core tests",
+    "migration_drift": "PASS Configuration\nPASS Django system checks\nPASS PostgreSQL connectivity\nFAIL Model migration drift. Run python manage.py makemigrations --check --dry-run and review the changes.",
+    "extension_verify": "PASS Configuration\nPASS Django system checks\nPASS PostgreSQL connectivity\nPASS Model migration drift\nPASS Applied migrations\nPASS Application and core tests",
+    "negative_control": "Negative ownership control ran in the expense project."
+  },
+  {
+    "app": "expense",
+    "initial_seconds": 10.06,
+    "extension_seconds": 13.02,
+    "initial_verify": "PASS Configuration\nPASS Django system checks\nPASS PostgreSQL connectivity\nPASS Model migration drift\nPASS Applied migrations\nPASS Application and core tests",
+    "migration_drift": "PASS Configuration\nPASS Django system checks\nPASS PostgreSQL connectivity\nFAIL Model migration drift. Run python manage.py makemigrations --check --dry-run and review the changes.",
+    "extension_verify": "PASS Configuration\nPASS Django system checks\nPASS PostgreSQL connectivity\nPASS Model migration drift\nPASS Applied migrations\nPASS Application and core tests",
+    "negative_control": {
+      "owner_scope": "PASS Configuration\nPASS Django system checks\nPASS PostgreSQL connectivity\nPASS Model migration drift\nPASS Applied migrations\nFAIL Application and core tests. Run python manage.py test for details. Check permissions to create test databases.",
+      "session_middleware": "PASS Configuration\nPASS Django system checks\nPASS PostgreSQL connectivity\nPASS Model migration drift\nPASS Applied migrations\nFAIL Application and core tests. Run python manage.py test for details. Check permissions to create test databases."
+    }
+  }
+]

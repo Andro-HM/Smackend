@@ -1,0 +1,13 @@
+{
+  "client": "curl parallel",
+  "offered": 1500,
+  "completed": 1500,
+  "successes": 1500,
+  "wall_s": 0.31120859399993606,
+  "completed_rps": 4819.918308555156,
+  "latency_ms": {
+    "p50": 5.626,
+    "p95": 8.181,
+    "p99": 9.221
+  }
+}
