@@ -1,6 +1,6 @@
 # Security policy
 
-`0.1.0a8` is an alpha built for development and evaluation. This policy covers reports against the current alpha. See the [qualification report](PHASE_4.md) and [roadmap](ROADMAP.md) for the outstanding gates.
+`0.1.0a9` is an alpha built for development and evaluation. This policy covers reports against the current alpha. See the [qualification report](PHASE_4.md) and [roadmap](ROADMAP.md) for the outstanding gates.
 
 ## Report a vulnerability
 

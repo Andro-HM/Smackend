@@ -2,7 +2,7 @@
 
 Phase 0 is provisionally concluded. The [experiment and measured results](experiments/phase0/RESULTS.md), [original architecture](ARCHITECTURE.md), and [framework evaluation](FRAMEWORK_EVALUATION.md) remain the reference material.
 
-The first GitHub publication presents `0.1.0a8` as an alpha. See the [release notes](CHANGELOG.md) and [qualification report](PHASE_4.md) for the changes and supporting evidence.
+`0.1.0a9` is the current alpha. The [changelog](CHANGELOG.md), [a9 qualification](PHASE_4.md#a9-final-qualification-follow-up), and [original a8 evidence](PHASE_4.md#evidence-and-scope) record each checkpoint.
 
 | Stage | Exit condition |
 |---|---|
@@ -39,7 +39,42 @@ Keep the Phase 0 Windows numbers as a diagnostic baseline. They describe the wor
 | 4.1 Baseline | Installed-toolkit Windows and WSL2 baselines and raw timelines retained. Move the load generator off-host for reference qualification. |
 | 4.2–4.4 Performance | Local middleware, pool, worker and outbound lifecycle comparisons ran. Worker-owned HTTP reuse met the isolated fan-out target. The 30-minute 100-user run met resource limits and missed latency. Repeat the reference mixed workload and real-time capacity runs under the specified envelope. |
 | 4.5 Security and reliability | Storage dependency and decoder remediation passed regression. Cross-process AI spending containment and disposable database failure checks passed. Close the stressed session-revocation, high-load failure and native dependency qualification gaps. |
-| 4.6 Deployment | Native WSL2, verified PostgreSQL TLS, HTTP proxy cookies, worker replacement and backup/restore passed locally. Qualify Compose, PostgreSQL 17 on Linux, production ingress and browser HTTPS/WSS. |
+| 4.6 Deployment | Native WSL2, verified PostgreSQL TLS, HTTP proxy cookies, worker replacement and backup/restore passed locally. The a9 wheel also passed on native PostgreSQL 17.11 within WSL2. Qualify Compose, production ingress and browser HTTPS/WSS on the reference setup. |
 | 4.7 Live providers | Simulated only. Real delivery, storage, OAuth, model, voice and billing tests require approved providers and test credentials. Direct Google registration remains outstanding. |
 | 4.8 Consumer rehearsal | Three installed-package applications and wildcard extensions passed. Verification detected broken ownership and session handling. A human-timed rehearsal remains open. |
 | 4.9 Release | Wheel, source, upgrade and activation checks passed locally. Maintain the alpha designation until the mandatory performance, deployment, provider and recovery gates pass. |
+
+
+## Phase 4 performance remediation
+
+The [remediation report](PHASE_4_OPTIMIZATION.md) tracks the corrected
+benchmark protocol and worker-owned outbound HTTP lifecycle. Retain the
+original latency and resource gates. Requalify protected CRUD on Linux
+PostgreSQL 17 with an independent generator, then add AI streams, storage,
+admitted login traffic and continuous duplex voice. Recheck pool and
+executor waiting, quota and socket admission, stressed revocation, large
+downloads, Compose, HTTPS/WSS, live providers and recovery under mixed load.
+
+
+## a9 final qualification status
+
+The installed a9 wheel passed the local Ubuntu WSL2 and PostgreSQL 17.11
+project verification and the isolated HTTPS, direct WSS, restore, worker
+replacement and database interruption checks. The 20-second combined
+diagnostic confirmed 50 simultaneous mock duplex calls with the scheduled
+CRUD and login workloads. The 40-second 500-socket repeat still missed the
+full-window latency target, with most of the tail concentrated during
+admission. The 30-minute 100-user local soak completed 74,960 valid
+operations and met sampled resource and integrity criteria. CRUD p95
+of 3.706/3.762/3.582 s and SSE first-event p95 of 3.864 s missed the
+existing targets. Preserve the existing security policies and retain
+the alpha.
+
+The [qualification follow-up](PHASE_4.md#a9-final-qualification-follow-up)
+records the measured scope and reference setup. Remaining mandatory gates
+include an independent driver and simulator on the reference Linux envelope,
+30-minute fixed mixed and 500-socket workloads with bounded reconnect and
+revocation, Docker Compose volume and app recreation, production HTTPS/WSS,
+browser security checks, recovery under full mixed load, and live providers.
+Keep the original per-route latency, throughput, correctness and resource
+targets.

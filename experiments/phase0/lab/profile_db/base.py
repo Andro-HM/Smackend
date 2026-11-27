@@ -35,6 +35,11 @@ class DatabaseWrapper(PostgreSQLWrapper):
 
     def get_new_connection(self, conn_params):
         sample = request_profile.get()
+        pool = self.pool
+        if sample is not None and pool is not None:
+            stats = pool.get_stats()
+            sample["pool_available"] = stats.get("pool_available", 0)
+            sample["pool_waiting"] = stats.get("requests_waiting", 0)
         start = perf_counter()
         try:
             conn = super().get_new_connection(conn_params)

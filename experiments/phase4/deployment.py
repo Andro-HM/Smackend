@@ -1,5 +1,7 @@
 """Isolated Linux HTTPS, database TLS, restore and outage qualification."""
 
+import asyncio
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from http.client import HTTPConnection
@@ -19,6 +21,8 @@ import httpx
 import psutil
 import psycopg
 from psycopg import sql
+from websockets.asyncio.client import connect
+from websockets.exceptions import ConnectionClosed, InvalidStatus
 
 from rehearsal import database, run
 from run import process
@@ -115,9 +119,12 @@ def cluster(action):
 
 
 @contextmanager
-def app(project, env, log):
-    argv = [sys.executable, "-m", "uvicorn", "config.asgi:application", "--port", str(PORT), "--host", "127.0.0.1",
-            "--workers", "2", "--lifespan", "off", "--no-access-log", "--forwarded-allow-ips", "127.0.0.1"]
+def app(project, env, log, tls=None):
+    argv = [sys.executable, "-m", "uvicorn", "config.asgi:application", "--port", str(8446 if tls else PORT), "--host", "127.0.0.1",
+            "--workers", "2", "--lifespan", "on", "--no-access-log", "--forwarded-allow-ips", "127.0.0.1"]
+    if tls:
+        cert, key = tls
+        argv += ["--ssl-certfile", str(cert), "--ssl-keyfile", str(key)]
     with process(argv, folder=project, env=env, log=log) as server:
         yield server
 
@@ -155,6 +162,74 @@ def dump_and_restore(source, destination, scratch):
                    env=env, check=True, timeout=40, stdout=subprocess.DEVNULL)
     subprocess.run([str(tools / "pg_restore"), "--exit-on-error", "--no-owner", "--dbname",
                     destination["POSTGRES_DB"], str(dump)], env=env, check=True, timeout=40, stdout=subprocess.DEVNULL)
+
+
+@contextmanager
+def download_traffic(path, tls, cookies):
+    stop = Event()
+    samples = []
+    stage = ["warm"]
+
+    def load():
+        with httpx.Client(base_url=TLS_ORIGIN, verify=tls, trust_env=False, timeout=8,
+                          cookies=cookies, headers={"Host": PROXY_HOST}) as client:
+            while not stop.is_set():
+                phase = stage[0]
+                try:
+                    result = client.get(path)
+                    outcome = "bad_body" if result.status_code == 200 and result.content != b"synthetic" else str(result.status_code)
+                except httpx.HTTPError:
+                    outcome = "transport_error"
+                samples.append((phase, outcome))
+                stop.wait(0.1)
+
+    threads = [Thread(target=load) for _ in range(4)]
+    for thread in threads:
+        thread.start()
+    try:
+        wait_until(lambda: sum(result == "200" for _, result in samples) >= 4)
+        yield stage, samples
+    finally:
+        stop.set()
+        for thread in threads:
+            thread.join()
+
+
+async def verify_wss(cookie, db, tls):
+    uri = f"wss://{PROXY_HOST}:8446/ws/realtime/"
+    parameters = {"host": "127.0.0.1", "ssl": tls, "origin": BROWSER_ORIGIN,
+                  "additional_headers": {"Cookie": f"sessionid={cookie}"}, "proxy": None}
+
+    def revoke():
+        with psycopg.connect(os.environ["SMACKEND_SMOKE_DSN"], dbname=db) as connection:
+            assert connection.execute("DELETE FROM django_session WHERE session_key = %s", (cookie,)).rowcount == 1
+        return monotonic()
+
+    async with connect(uri, **parameters) as socket:
+        payload = json.dumps({"type": "echo", "text": "qualification"})
+        await socket.send(payload)
+        assert json.loads(await socket.recv()) == json.loads(payload)
+        committed = await asyncio.to_thread(revoke)
+        last_echo = None
+        try:
+            async with asyncio.timeout(5):
+                while True:
+                    await socket.send(payload)
+                    assert json.loads(await socket.recv()) == json.loads(payload)
+                    last_echo = monotonic()
+                    await asyncio.sleep(0.05)
+        except ConnectionClosed as exc:
+            assert exc.rcvd is not None and exc.rcvd.code == 4403
+        close_ms = (monotonic() - committed) * 1000
+        assert close_ms <= 5000
+    try:
+        async with connect(uri, **parameters):
+            raise AssertionError("A revoked session reconnected")
+    except InvalidStatus as exc:
+        assert exc.response.status_code == 403
+    return {"close_after_commit_ms": close_ms,
+            "last_echo_after_commit_ms": None if last_echo is None else (last_echo - committed) * 1000,
+            "reconnect_status": 403}
 
 
 def exercise_outage(browser, credentials):
@@ -204,7 +279,7 @@ def main(scratch):
     scratch.mkdir(parents=True, exist_ok=False)
     cert, key = scratch / "test-cert.pem", scratch / "test-key.pem"
     subprocess.run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "2",
-                    "-subj", "/CN=phase4-test", "-addext", "subjectAltName=IP:127.0.0.1",
+                    "-subj", "/CN=phase4-test", "-addext", "subjectAltName=IP:127.0.0.1,DNS:qualification.example.test",
                     "-keyout", str(key), "-out", str(cert)], check=True, capture_output=True)
     key.chmod(0o600)
     configure_postgresql_tls(cert, key)
@@ -213,10 +288,12 @@ def main(scratch):
         env = credentials | {"DJANGO_ENV": "production", "DJANGO_DEBUG": "false",
                              "DJANGO_ALLOWED_HOSTS": PROXY_HOST, "DJANGO_TRUST_PROXY_SSL_HEADER": "true",
                              "POSTGRES_SSLMODE": "verify-full", "POSTGRES_SSLROOTCERT": str(cert),
-                             "POSTGRES_POOL_TIMEOUT_SECONDS": "1", "SMACKEND_LOG_LEVEL": "WARNING"}
-        run(scratch, env, *cli, "init", "deployment", "--storage")
+                             "POSTGRES_POOL_TIMEOUT_SECONDS": "1", "SMACKEND_LOG_LEVEL": "WARNING",
+                             "SMACKEND_REALTIME_ORIGINS": BROWSER_ORIGIN}
+        run(scratch, env, *cli, "init", "deployment", "--storage", "--realtime", "--http")
         project = scratch / "deployment"
         run(project, env, "manage.py", "migrate", "--noinput")
+        run(project, env, *cli, "verify")
         with app(project, env, scratch / "app.log") as runtime, httpx.Client(
             base_url=TLS_ORIGIN, verify=tls, timeout=10, trust_env=False, headers={"Host": PROXY_HOST},
         ) as browser:
@@ -240,15 +317,34 @@ def main(scratch):
             assert uploaded.status_code == 201
             path = "/api/files/" + uploaded.json()[0]["id"] + "/download"
             assert browser.get(path).content == b"synthetic"
-            def both_workers():
-                return len(workers(runtime.pid)) == 2
-            wait_until(both_workers)
-            original = workers(runtime.pid)
-            os.kill(min(original), signal.SIGKILL)
-            replacement = wait_until(lambda: both_workers() and workers(runtime.pid) != original)
-            assert browser.get(path).content == b"synthetic"
-            outage = exercise_outage(browser, env)
-            assert browser.get(path).content == b"synthetic"
+            with download_traffic(path, tls, httpx.Cookies(browser.cookies)) as (stage, samples):
+                def both_workers():
+                    return len(workers(runtime.pid)) == 2
+
+                wait_until(both_workers)
+                original = workers(runtime.pid)
+                stage[0] = "replacement"
+                os.kill(min(original), signal.SIGKILL)
+                replacement = wait_until(lambda: both_workers() and workers(runtime.pid) != original)
+                assert browser.get(path).content == b"synthetic"
+                stage[0] = "outage_and_recovery"
+                outage = exercise_outage(browser, env)
+                assert browser.get(path).content == b"synthetic"
+                stage[0] = "revocation"
+                with httpx.Client(base_url=TLS_ORIGIN, verify=tls, trust_env=False, timeout=10,
+                                  headers={"Host": PROXY_HOST}) as second:
+                    second.get("/identity/browser/v1/auth/session")
+                    signed_in = second.post("/identity/browser/v1/auth/signup",
+                                            headers={"X-CSRFToken": second.cookies["csrftoken"], "Origin": BROWSER_ORIGIN},
+                                            json={"username": "revocation", "password": PASSWORD})
+                    assert signed_in.status_code == 200
+                    with app(project, env, scratch / "wss.log", tls=(cert, key)):
+                        with httpx.Client(verify=tls, trust_env=False, headers={"Host": PROXY_HOST}) as direct:
+                            wait_until(lambda: direct.get("https://127.0.0.1:8446/api/ready").status_code == 200)
+                        wss = asyncio.run(verify_wss(second.cookies["sessionid"], env["POSTGRES_DB"], tls))
+            traffic = {label: dict(Counter(outcome for phase, outcome in samples if phase == label))
+                       for label in {phase for phase, _ in samples}}
+            assert all("bad_body" not in outcomes for outcomes in traffic.values())
             dump_and_restore(env, restored, scratch)
             cookies = httpx.Cookies(browser.cookies)
         storage = scratch / "restored-media"
@@ -262,7 +358,8 @@ def main(scratch):
             assert browser.get("/api/account/profile").json()["username"] == "deployment"
     print(json.dumps({"postgres_verify_full": True, "postgres_bad_hostname_rejected": True,
                       "secure_cookies_and_csrf": True, "database_and_file_restore": True,
-                      "worker_replacement_ms": replacement * 1000, **outage}, indent=2))
+                      "worker_replacement_ms": replacement * 1000, "download_traffic": traffic,
+                      "direct_wss": wss, **outage}, indent=2))
 
 
 if __name__ == "__main__":

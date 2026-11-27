@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "smackend"
-version = "0.1.0a8"
+version = "0.1.0a9"
 description = "Reusable infrastructure for ordinary Django and PostgreSQL projects"
 readme = "README.md"
 license = "MIT"

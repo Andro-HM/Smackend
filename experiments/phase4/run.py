@@ -1,9 +1,10 @@
 """Run the Phase 4 workload against an installed Smackend distribution."""
 
 import argparse
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from hashlib import sha256
 import importlib.metadata
+import gzip
 import json
 import os
 from pathlib import Path
@@ -26,7 +27,7 @@ PHASE0 = HERE.parent / "phase0"
 
 @contextmanager
 def process(argv, *, folder, env, log):
-    with log.open("w", encoding="utf-8") as file:
+    with (log.open("w", encoding="utf-8") if log else nullcontext(subprocess.DEVNULL)) as file:
         task = subprocess.Popen(argv, cwd=folder, env=env, stdout=file, stderr=subprocess.STDOUT)
         try:
             yield task
@@ -39,13 +40,24 @@ def process(argv, *, folder, env, log):
                     parent = psutil.Process(task.pid)
                     children = parent.children(recursive=True)
                     for child in children:
-                        child.terminate()
+                        try:
+                            child.terminate()
+                        except psutil.NoSuchProcess:
+                            pass
                 task.terminate()
                 try:
                     task.wait(timeout=15)
                 except subprocess.TimeoutExpired:
                     task.kill()
                     task.wait()
+                if os.name == "nt":
+                    _, survivors = psutil.wait_procs(children, timeout=3)
+                    for child in survivors:
+                        try:
+                            child.kill()
+                        except psutil.NoSuchProcess:
+                            pass
+                    psutil.wait_procs(survivors, timeout=3)
 
 
 def ready(task, url):
@@ -95,7 +107,8 @@ def record_resources(stop, destination, *, app, driver, provider, database, dsn,
                     """, (name,)).fetchall()
             except psycopg.Error:
                 connections = []
-            output.write(json.dumps({"elapsed": monotonic() - start, "processes": groups,
+            now = monotonic()
+            output.write(json.dumps({"elapsed": now - start, "monotonic": now, "processes": groups,
                                      "connections": dict(connections)}) + "\n")
             output.flush()
             stop.wait(1)
@@ -106,7 +119,7 @@ def checked(args, *, project, env, capture=False):
                           check=True, text=True, capture_output=capture)
 
 
-def check_dataset(dsn, name, project, expected_records, expected_assets):
+def check_dataset(dsn, name, project, expected_records, expected_assets, acknowledged):
     with psycopg.connect(dsn, dbname=name) as connection:
         records, wrong_owner = connection.execute("""
             SELECT count(*), count(*) FILTER (
@@ -124,6 +137,12 @@ def check_dataset(dsn, name, project, expected_records, expected_assets):
         inconsistent = sum(not owned for _, owned in assets)
         remaining = connection.execute("SELECT count(*) FROM qualification_record WHERE sequence >= 100000").fetchone()[0]
         socket_leases = connection.execute("SELECT count(*) FROM realtime_socketlease").fetchone()[0]
+        actual = dict(connection.execute("""
+            SELECT substr(u.username, 8)::integer, r.amount
+            FROM qualification_record r JOIN accounts_user u ON r.owner_id = u.id
+            WHERE r.sequence = 0
+        """).fetchall())
+        mismatched_writes = sum(actual.get(actor) != amount for actor, amount in acknowledged.items())
         owner = connection.execute("SELECT min(owner_id) FROM qualification_record").fetchone()[0]
         plan = connection.execute("""
             EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)
@@ -132,10 +151,10 @@ def check_dataset(dsn, name, project, expected_records, expected_assets):
     return {"required_records": expected_records, "owned_records": records, "incorrect_owner_labels": wrong_owner,
             "required_assets": expected_assets, "assets": len(assets), "inconsistent_assets": inconsistent,
             "missing_files": missing, "leftover_create_delete_records": remaining,
-            "socket_leases_at_end": socket_leases,
+            "socket_leases_at_end": socket_leases, "mismatched_writes": mismatched_writes,
             "quiet_read_execution_ms": plan["Execution Time"], "quiet_read_planning_ms": plan["Planning Time"],
             "correct": records == expected_records and len(assets) == expected_assets
-            and not (wrong_owner or inconsistent or missing or remaining)}
+            and not (wrong_owner or inconsistent or missing or remaining or mismatched_writes or socket_leases)}
 
 
 def configure(project, env, provider_url):
@@ -147,16 +166,27 @@ def configure(project, env, provider_url):
         settings.write("""
 import os
 INSTALLED_APPS += ["qualification"]
+QUALIFICATION_MANAGED = os.getenv("QUALIFICATION_MANAGED") == "1"
 QUALIFICATION_EARLY_RELEASE = os.getenv("QUALIFICATION_EARLY_RELEASE", "1") == "1"
 if os.getenv("QUALIFICATION_AUTH_IP_BUDGET"):
     SMACKEND_AUTH_LIMITS = {"ip": int(os.environ["QUALIFICATION_AUTH_IP_BUDGET"])}
 if os.getenv("QUALIFICATION_PROFILE") == "1":
     from lab.profile_db import base as probe
-    probe.TABLE_GROUPS['"qualification_record"'] = "record"
+    probe.TABLE_GROUPS.update({
+        '"qualification_record"': "record",
+        '"ai_invocation"': "ai_ledger",
+        '"realtime_socketlease"': "socket_lease",
+        "pg_advisory_xact_lock": "admission_lock",
+    })
     DATABASES["default"]["ENGINE"] = "lab.profile_db"
 """)
     with (project / "config" / "api.py").open("a", encoding="utf-8") as api:
         api.write('\nfrom qualification.models import router\napi.add_router("/bench", router)\n')
+    with (project / "config" / "urls.py").open("a", encoding="utf-8") as urls:
+        urls.write(
+            '\nfrom qualification.models import comparison_api, django_read\n'
+            'urlpatterns += [path("baseline/django", django_read), path("baseline/ninja/", comparison_api.urls)]\n'
+        )
     with (project / "config" / "asgi.py").open("a", encoding="utf-8") as app_config:
         app_config.write("""
 if os.getenv("QUALIFICATION_PROFILE") == "1":
@@ -167,7 +197,7 @@ if os.getenv("QUALIFICATION_REUSE") == "1":
     application = with_outbound(application)
 """)
     env.update(
-        PYTHONPATH=os.pathsep.join((str(PHASE0), str(HERE))),
+        PYTHONPATH=os.pathsep.join(filter(None, (str(PHASE0), str(HERE), env.get("PYTHONPATH")))),
         SMACKEND_HTTP_PROVIDERS=json.dumps({"synthetic": {"base_url": provider_url, "allow_http": True, "attempts": 1}}),
         SMACKEND_AI_MODELS=json.dumps({"synthetic": {"adapter": "openai", "provider": "synthetic",
                                                      "model": "qualification-only", "capabilities": ["text", "stream"]}}),
@@ -190,10 +220,24 @@ def main():
     parser.add_argument("--users", type=int, default=1000)
     parser.add_argument("--rows", type=int, default=100)
     parser.add_argument("--profile", action="store_true")
+    parser.add_argument("--file-bytes", type=int, default=4096)
+    parser.add_argument("--ledger-rows", type=int, default=0)
+    parser.add_argument("--socket-stagger", type=float, default=0.003)
     parser.add_argument("--hold-outbound", action="store_true")
-    parser.add_argument("--reuse-outbound", action="store_true")
+    lifecycle = parser.add_mutually_exclusive_group()
+    lifecycle.add_argument("--reuse-outbound", action="store_true")
+    lifecycle.add_argument("--managed-outbound", action="store_true")
+    parser.add_argument("--trace", action="store_true")
+    parser.add_argument("--wire-timing", action="store_true", help="Also profile HTTPX and Uvicorn internals")
+    parser.add_argument("--socket-profile", action="store_true", help="Log aggregate socket spans on disconnect")
     parser.add_argument("--auth-ip-budget", type=int)
     args = parser.parse_args()
+    if args.wire_timing:
+        args.profile = args.trace = True
+    if not 0 <= args.ledger_rows <= 100_000 or not 0 <= args.socket_stagger <= 1:
+        parser.error("Use 0–100000 ledger rows and 0–1 seconds of spacing between socket starts.")
+    if not 4096 <= args.file_bytes <= 8 * 1024 * 1024:
+        parser.error("--file-bytes must be between 4096 and 8388608")
     if args.psutil:
         sys.path.insert(0, str(args.psutil.resolve()))
     import psutil
@@ -222,6 +266,12 @@ def main():
                QUALIFICATION_EARLY_RELEASE="0" if args.hold_outbound else "1",
                QUALIFICATION_PROFILE="1" if args.profile else "0",
                QUALIFICATION_REUSE="1" if args.reuse_outbound else "0")
+    env["QUALIFICATION_WIRE_TIMING"] = "1" if args.wire_timing else "0"
+    env["QUALIFICATION_SOCKET_PROFILE"] = "1" if args.socket_profile else "0"
+    env["QUALIFICATION_LEDGER_ROWS"] = str(args.ledger_rows)
+    env["QUALIFICATION_FILE_BYTES"] = str(args.file_bytes)
+    env["SMACKEND_STORAGE_FILE_BYTES"] = str(max(5 * 1024 * 1024, args.file_bytes))
+    env["QUALIFICATION_MANAGED"] = "1" if args.managed_outbound else "0"
     if args.auth_ip_budget:
         env["QUALIFICATION_AUTH_IP_BUDGET"] = str(args.auth_ip_budget)
     started = monotonic()
@@ -248,8 +298,9 @@ def main():
                 provider_startup = ready(provider, provider_url + "/")
                 with process([sys.executable, "-m", "uvicorn", "config.asgi:application", "--host", "127.0.0.1",
                               "--port", str(args.port), "--workers", str(args.workers), "--lifespan",
-                              "on" if args.reuse_outbound else "off",
-                              "--no-access-log", "--ws-max-size", "4096", "--ws-max-queue", "8"],
+                              "on" if args.reuse_outbound or args.managed_outbound else "off",
+                              "--no-access-log", "--ws-max-size", "4096", "--ws-max-queue", "8",
+                              *(["--http", "h11"] if args.wire_timing else [])],
                              folder=project, env=env, log=app_log) as app:
                     startup = ready(app, url + "/api/ready")
                     measures = {"release": importlib.metadata.version("smackend"), "platform": platform.platform(),
@@ -261,6 +312,13 @@ def main():
                                 "profile": args.profile, "hold_outbound": args.hold_outbound}
                     measures["auth_ip_budget_override"] = args.auth_ip_budget
                     measures["reuse_outbound"] = args.reuse_outbound
+                    measures["managed_outbound"] = args.managed_outbound
+                    measures["trace"] = args.trace
+                    measures["wire_timing"] = args.wire_timing
+                    measures["file_bytes"] = args.file_bytes
+                    measures["ledger_rows"] = args.ledger_rows
+                    measures["socket_stagger"] = args.socket_stagger
+                    measures["socket_profile"] = args.socket_profile
                     measures["driver_sha256"] = sha256((HERE / "load.py").read_bytes()).hexdigest()
                     evidence.joinpath("environment.json").write_text(json.dumps(measures, indent=2), encoding="utf-8")
                     idle = Event()
@@ -272,16 +330,40 @@ def main():
                     sleep(5)
                     idle.set()
                     sample.join()
+                    actors = json.loads(identities.read_text(encoding="utf-8"))
+                    for actor in actors:
+                        actor.update(amount=1, total=args.rows)
+                    if len(actors) < 2:
+                        raise ValueError("Seed at least two actors to verify isolation.")
+                    with httpx.Client(base_url=url, trust_env=False, timeout=10) as client:
+                        headers = {"Cookie": "sessionid=" + actors[0]["session"]}
+                        if client.get("/api/bench/records").status_code != 401:
+                            raise RuntimeError("Anonymous read did not reject access.")
+                        if client.get(f"/api/files/{actors[1]['file']}/download", headers=headers).status_code != 404:
+                            raise RuntimeError("Private file was accessible to a different actor.")
+                    acknowledged = {actor["index"]: 1 for actor in actors}
+                    unsafe_outcomes = 0
                     for index, scenario in enumerate(args.matrix):
                         operation, user_count, seconds, *rate = scenario.split(":")
                         label = f"{index:02d}-{operation}-{user_count}"
-                        driver_args = [sys.executable, str(HERE / "load.py"), "--url",
-                                       provider_url if operation in {"control", "voice-direct"} else url,
-                                       "--identities", str(identities),
-                                       "--users", user_count, "--seconds", seconds, "--raw",
-                                       str(evidence / (label + ".jsonl.gz")), "--workload", operation]
-                        if rate:
-                            driver_args += ["--rate", rate[0]]
+                        if operation == "fixed-mix":
+                            driver_args = [sys.executable, str(HERE / "fixed_mix.py"), "--url", url,
+                                           "--identities", str(identities), "--seconds", seconds, "--raw",
+                                           str(evidence / (label + ".jsonl.gz"))]
+                        else:
+                            driver_args = [sys.executable, str(HERE / "load.py"), "--url",
+                                           provider_url if operation in {"control", "voice-direct"} else url,
+                                           "--identities", str(identities),
+                                           "--users", user_count, "--seconds", seconds,
+                                           "--socket-stagger", str(args.socket_stagger), "--raw",
+                                           str(evidence / (label + ".jsonl.gz")), "--workload", operation]
+                            if args.wire_timing:
+                                driver_args += ["--wire-timing"]
+                            if args.trace:
+                                driver_args += ["--trace"]
+                            if rate:
+                                driver_args += ["--rate", rate[0]]
+                        identities.write_text(json.dumps(actors), encoding="utf-8")
                         print(f"Running {scenario}", flush=True)
                         with open(evidence / (label + ".json"), "w", encoding="utf-8") as summary:
                             driver = subprocess.Popen(driver_args, env=env, stdout=summary)
@@ -297,11 +379,30 @@ def main():
                             finally:
                                 stop.set()
                                 sample.join()
+                        with gzip.open(evidence / (label + ".jsonl.gz"), "rt", encoding="utf-8") as raw:
+                            for line in raw:
+                                row = json.loads(line)
+                                unsafe_outcomes += row["status"] == 200 and not row["valid"]
+                                if "acknowledged_write" in row:
+                                    actor, amount = row["acknowledged_write"]
+                                    entry = actors[actor]
+                                    entry["total"] += amount - entry["amount"]
+                                    entry["amount"] = acknowledged[actor] = amount
                         playback = json.loads((evidence / (label + ".json")).read_text(encoding="utf-8"))
                         print(f"{label}: {playback['valid']}/{playback['completed']} valid, "
                               f"{playback['completed_rps']:.1f}/s, {playback['late_or_busy']} missed", flush=True)
-                    integrity = check_dataset(dsn, name, project, args.users * args.rows, args.users)
+                    if args.profile and args.socket_profile:
+                        marker = "QUALIFICATION_SOCKET "
+                        sockets = [json.loads(line.removeprefix(marker)) for line in
+                                   app_log.read_text(encoding="utf-8", errors="replace").splitlines()
+                                   if line.startswith(marker)]
+                        (evidence / "socket-profiles.json").write_text(json.dumps(sockets), encoding="utf-8")
+                    integrity = check_dataset(dsn, name, project, args.users * args.rows, args.users, acknowledged)
+                    integrity["invalid_success_responses"] = unsafe_outcomes
+                    integrity["correct"] &= unsafe_outcomes == 0
                     (evidence / "integrity.json").write_text(json.dumps(integrity, indent=2), encoding="utf-8")
+                    if not integrity["correct"]:
+                        raise RuntimeError("Qualification integrity verification failed.")
         finally:
             db.execute(sql.SQL("DROP DATABASE {} WITH (FORCE)").format(sql.Identifier(name)))
 

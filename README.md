@@ -1,6 +1,6 @@
 # Smackend
 
-**v0.1.0a8 · Alpha · Production qualification pending**
+**v0.1.0a9 · Alpha · Production qualification pending**
 
 Smackend is a reusable backend toolkit for Django, Django Ninja, and PostgreSQL. Its CLI generates a small project that imports shared infrastructure from the installed package. The generated application owns its settings, models, migrations, routes, permissions, and frontend.
 
@@ -34,7 +34,7 @@ The stack uses Python 3.11–3.12, Django 5.2 LTS, Django Ninja, PostgreSQL thro
 | `--auth` | Browser sessions, configurable registration and sign-in, Argon2 password hashing, account lifecycle, application permissions, and optional OTP delivery and linked Google sign-in | — |
 | `--storage` | Managed private or public files, owner-scoped changes, quotas, local storage, and optional S3-compatible storage | Auth |
 | `--admin` | Native Django admin with recent reauthentication, role controls, and audit records | Auth |
-| `--http` | Named outbound providers with timeouts, bounded requests and responses, explicit retry policy, and reusable clients | — |
+| `--http` | Named outbound providers with timeouts, bounded requests and responses, explicit retry policy, and ASGI worker-owned clients | — |
 | `--ai` | Provider adapters, text and streaming, structured output, tools, embeddings, supported media, and PostgreSQL usage controls | Auth and HTTP |
 | `--realtime` | Authenticated point-to-point WebSockets, bounded relay, offline PCM demo, and optional Gemini Live | Auth |
 
@@ -44,27 +44,27 @@ Flags select settings, routes, and dependency extras at generation time. For an 
 
 Install Git, Python **3.11 or 3.12**, and [uv](https://docs.astral.sh/uv/getting-started/installation/). For the Compose quickstart, start Docker Desktop with Linux containers on Windows, or Docker Engine with the Compose plugin on Linux. An existing PostgreSQL instance is also usable. Port 55432 is the development database default, and the server example uses port 8000.
 
-Run the following in **Windows PowerShell** or a **Linux shell**. uv manages the virtual environment in either shell. The version below is the local alpha, so build the wheel from a checkout containing the a8 source.
+Run the following in **Windows PowerShell** or a **Linux shell**. uv manages the virtual environment in either shell. These commands check out the GitHub a9 tag and build its wheel locally.
 
 ```sh
-git clone https://github.com/Andro-HM/Smackend.git
+git clone --branch v0.1.0a9 https://github.com/Andro-HM/Smackend.git
 cd Smackend
 uv build
 mkdir .local
 cd .local
-uv tool run --from ../dist/smackend-0.1.0a8-py3-none-any.whl smackend --version
-uv tool run --from ../dist/smackend-0.1.0a8-py3-none-any.whl smackend init private-notes --auth
+uv tool run --from ../dist/smackend-0.1.0a9-py3-none-any.whl smackend --version
+uv tool run --from ../dist/smackend-0.1.0a9-py3-none-any.whl smackend init private-notes --auth
 cd private-notes
 uv sync --find-links ../../dist --python 3.11
 docker compose up -d --wait postgres
 uv run python manage.py migrate
 uv run smackend verify
-uv run python -m uvicorn config.asgi:application --host 127.0.0.1 --port 8000 --lifespan off --no-proxy-headers --no-access-log
+uv run python -m uvicorn config.asgi:application --host 127.0.0.1 --port 8000 --lifespan auto --no-proxy-headers --no-access-log
 ```
 
 Open the app at `http://127.0.0.1:8000/`, API docs at `/api/docs`, or the account page at `/account/`. Use `smackend init my-app` for a plain scaffold or `smackend init my-app --storage --admin --ai --realtime` for a combined example with offline features at `/assist/`. Use the same `uv tool run --from` prefix when running from a local wheel. Choose one initialization command for a new project directory. Add business models and routes in the generated project.
 
-Install the CLI from an existing local wheel with `uv tool install ./dist/smackend-0.1.0a8-py3-none-any.whl`, then run `smackend init my-app`. When syncing the generated app, point `--find-links` to the directory containing that wheel. The CLI also works with a local source distribution.
+Install the CLI from an existing local wheel with `uv tool install ./dist/smackend-0.1.0a9-py3-none-any.whl`, then run `smackend init my-app`. When syncing the generated app, point `--find-links` to the directory containing that wheel. The CLI also works with a local source distribution.
 
 ## Configuration and database
 
@@ -85,19 +85,41 @@ In a generated app, `uv run smackend verify` checks configuration, Django, Postg
 | [`experiments/phase4/`](experiments/phase4/) | Qualification harness and sanitized measurements |
 | [`pyproject.toml`](pyproject.toml) and [`uv.lock`](uv.lock) | Package metadata and reproducible dependencies |
 
+## Upgrading from a8
+
+Update the Smackend dependency pin to `0.1.0a9` and sync the generated
+app against the new wheel. For existing outbound or AI integrations,
+wrap the final Django or Channels application with `with_outbound` and
+enable ASGI lifespan to share clients across requests. Managed admission
+limits apply per named provider per worker. Explicit client ownership
+is still supported. This release requires no toolkit schema migration.
+[Upgrade instructions](PHASE_4_OPTIMIZATION.md#outbound-http-lifecycle)
+
 ## Alpha qualification
 
-Phase 4 recorded **138 wheel regression tests** and **21 source-install integration tests** passing, an existing-project upgrade, 26 module activation profiles, Chromium checks, and isolated Linux TLS, database recovery, and restore checks.
+The a9 remediation passed **140 regression tests** against PostgreSQL,
+plus wheel and source-install scaffolding checks. The installed wheel
+also passed all six `smackend verify` checks on Ubuntu WSL2 with
+PostgreSQL 17.11. Local checks covered HTTPS cookies and CSRF, direct
+WSS session revocation, worker replacement, PostgreSQL interruption,
+and restore of a private file and database.
 
 | Local observation | Result |
 |---|---|
-| 100 users for 30 minutes on WSL2 | 60,527 completed requests, one transport error, 243 MiB peak app RSS, 16 peak app DB connections |
-| Sustained CRUD latency | Read 5.18 s, write 5.30 s, aggregate 5.35 s p95. All missed the original targets of 250, 500, and 750 ms. |
-| Isolated authentication | All 300 successful logins at 5/s, 253 ms p95 |
-| Isolated outbound fan-out | 920–1,044 ms p95 with a client per request, 233–235 ms with client reuse |
-| Real-time | 500-client echo p95 of 409 ms and 100-client SSE first-event p95 of 5.43 s missed their targets. A 50-call mock duplex test measured 21 ms frame RTT p95. |
+| Matched Windows fan-out pilot at 25 offered requests/s | a8 completed 58 of 250 offers inside the window, compared with 248 for a9. Observed p95 fell from 5,653 ms to 169 ms. The variants completed different proportions of offered traffic. |
+| Short Windows AI and SSE comparisons | AI completion p95 fell from 4,210 to 97 ms. First SSE event p95 fell from 3,482 to 152 ms. |
+| WSL2 100-user, 30-minute soak | 74,960 valid operations, 41.6 operations/s in-window, 229 MiB peak app RSS, 0.55% app RSS growth, and 15 peak DB connections. Integrity reconciliation passed. |
+| WSL2 sustained latency | Read/write/aggregate p95 of 3.71/3.76/3.58 s and SSE first-event p95 of 3.86 s all missed their targets. |
+| WSL2 real-time | The 40-second, 500-socket test returned 9,647 valid echoes and missed the 100 ms p95 target at 151 ms. The 20-second mixed test held 50 mock duplex calls, matched all 50,000 frames, and completed 500 CRUD operations and 100 logins. |
 
-The app, database, simulators, and load drivers shared the test host. These results characterize that setup. Reference Linux/PostgreSQL 17 testing with independent load generation, Docker Compose qualification, production HTTPS/WSS, sustained mixed-load recovery and revocation, and live provider checks remain open. Direct Google registration remains outstanding. The Redis-free socket implementation provides point-to-point communication. Cross-worker group broadcasts and transparent reconnect or replay require a separate design. [Phase 4 report](PHASE_4.md) · [Raw Phase 4 evidence](experiments/phase4/evidence/) · [Roadmap](ROADMAP.md)
+These shared-host tests used synthetic providers. The independent-load
+reference runs, sustained mixed and socket gates, Compose recreation,
+production HTTPS/WSS, browser checks, mixed-load recovery and revocation,
+and live-provider qualification remain open. Direct Google registration
+is still outstanding. Real-time support is point-to-point.
+[Remediation results](PHASE_4_OPTIMIZATION.md) ·
+[a9 qualification](PHASE_4.md#a9-final-qualification-follow-up) ·
+[Roadmap](ROADMAP.md)
 
 ## Documentation
 

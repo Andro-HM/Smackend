@@ -1,0 +1,2499 @@
+{
+  "wheel_sha256": "1967414dcd01732b5b85a4d46d008a2c15c461d3a82289029ee22e9473d6b5af",
+  "fixed_mix_driver_sha256": "06db79153d6f0deef3557a9d6cd562983be58acab29f6dd6966a5289ca3a23ae",
+  "diagnostics": {
+    "environment": {
+      "release": "0.1.0a9",
+      "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "python": "3.12.3",
+      "postgres": 170011,
+      "logical_cpus": 12,
+      "machine_ram": 8190640128,
+      "workers": 2,
+      "pool_per_worker": 8,
+      "users_seeded": 520,
+      "rows_per_user": 100,
+      "app_startup_ms": 975.9399489999794,
+      "provider_startup_ms": 280.2307139999982,
+      "fixture_seconds": 12.587766318999996,
+      "profile": true,
+      "hold_outbound": false,
+      "auth_ip_budget_override": 400,
+      "reuse_outbound": false,
+      "managed_outbound": true,
+      "trace": true,
+      "wire_timing": true,
+      "file_bytes": 4096,
+      "ledger_rows": 0,
+      "socket_stagger": 0.003,
+      "socket_profile": false,
+      "driver_sha256": "aeb655d22aeb624a03743d8730ffd31696404661da6c68dd38344e6523dd463a"
+    },
+    "integrity": {
+      "required_records": 52000,
+      "owned_records": 52000,
+      "incorrect_owner_labels": 0,
+      "required_assets": 520,
+      "assets": 520,
+      "inconsistent_assets": 0,
+      "missing_files": 0,
+      "leftover_create_delete_records": 0,
+      "socket_leases_at_end": 0,
+      "mismatched_writes": 0,
+      "quiet_read_execution_ms": 0.05,
+      "quiet_read_planning_ms": 0.048,
+      "correct": true,
+      "invalid_success_responses": 0
+    },
+    "trials": {
+      "00-crud-100": {
+        "users": 100,
+        "seconds": 12,
+        "rate": 25.0,
+        "mix": "crud",
+        "offered": 300,
+        "late_or_busy": 0,
+        "completed": 300,
+        "valid": 300,
+        "completed_rps": 25.0,
+        "completed_in_window": 300,
+        "completed_in_drain": 0,
+        "missed_by_operation": {},
+        "driver_loop_lag_ms": {
+          "p50": 0.805,
+          "p95": 2.564,
+          "p99": 6.696
+        },
+        "groups": {
+          "read": {
+            "count": 195,
+            "valid": 195,
+            "failures": {},
+            "completed_in_window": 195,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 55.453,
+              "p95": 59.83,
+              "p99": 87.001
+            },
+            "start_late_ms": {
+              "p50": 0.748,
+              "p95": 1.767,
+              "p99": 2.239
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {
+              "checkout": {
+                "p50": 0.245,
+                "p95": 0.33,
+                "p99": 9.499
+              },
+              "lease": {
+                "p50": 3.328,
+                "p95": 4.205,
+                "p99": 6.969
+              },
+              "db": {
+                "p50": 0.781,
+                "p95": 1.064,
+                "p99": 1.987
+              },
+              "thread_wait": {
+                "p50": 0.94,
+                "p95": 1.131,
+                "p99": 1.195
+              },
+              "thread_run": {
+                "p50": 3.214,
+                "p95": 3.938,
+                "p99": 29.636
+              },
+              "bridge": {
+                "p50": 5.561,
+                "p95": 6.642,
+                "p99": 32.086
+              },
+              "thread_calls": {
+                "p50": 15,
+                "p95": 15,
+                "p99": 15
+              },
+              "lag": {
+                "p50": 0.191,
+                "p95": 1.037,
+                "p99": 17.969
+              },
+              "app": {
+                "p50": 6.105,
+                "p95": 7.214,
+                "p99": 34.563
+              }
+            },
+            "pool_available_before_checkout": {
+              "p50": 2,
+              "p95": 2,
+              "p99": 2
+            },
+            "pool_waiting_before_checkout": {
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "sql_by_group_ms": {
+              "record": {
+                "p50": 0.23,
+                "p95": 0.338,
+                "p99": 0.514
+              },
+              "session": {
+                "p50": 0.315,
+                "p95": 0.422,
+                "p99": 0.941
+              },
+              "user": {
+                "p50": 0.221,
+                "p95": 0.334,
+                "p99": 0.532
+              }
+            },
+            "queries_p50": 3,
+            "resume_residual_ms": {
+              "p50": 1.359,
+              "p95": 1.731,
+              "p99": 1.914
+            }
+          },
+          "write": {
+            "count": 52,
+            "valid": 52,
+            "failures": {},
+            "completed_in_window": 52,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 55.699,
+              "p95": 60.402,
+              "p99": 64.52
+            },
+            "start_late_ms": {
+              "p50": 0.755,
+              "p95": 1.366,
+              "p99": 2.218
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {
+              "checkout": {
+                "p50": 0.228,
+                "p95": 0.289,
+                "p99": 0.313
+              },
+              "lease": {
+                "p50": 5.621,
+                "p95": 6.865,
+                "p99": 7.38
+              },
+              "db": {
+                "p50": 1.134,
+                "p95": 1.475,
+                "p99": 1.496
+              },
+              "thread_wait": {
+                "p50": 0.939,
+                "p95": 1.194,
+                "p99": 1.638
+              },
+              "thread_run": {
+                "p50": 5.558,
+                "p95": 6.695,
+                "p99": 7.067
+              },
+              "bridge": {
+                "p50": 7.824,
+                "p95": 9.412,
+                "p99": 9.554
+              },
+              "thread_calls": {
+                "p50": 15,
+                "p95": 15,
+                "p99": 15
+              },
+              "lag": {
+                "p50": 0.166,
+                "p95": 0.873,
+                "p99": 1.129
+              },
+              "app": {
+                "p50": 8.398,
+                "p95": 10.033,
+                "p99": 10.301
+              }
+            },
+            "pool_available_before_checkout": {
+              "p50": 2,
+              "p95": 2,
+              "p99": 2
+            },
+            "pool_waiting_before_checkout": {
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "sql_by_group_ms": {
+              "record": {
+                "p50": 0.551,
+                "p95": 0.811,
+                "p99": 0.936
+              },
+              "session": {
+                "p50": 0.312,
+                "p95": 0.416,
+                "p99": 0.439
+              },
+              "user": {
+                "p50": 0.231,
+                "p95": 0.318,
+                "p99": 0.345
+              }
+            },
+            "queries_p50": 4.0,
+            "resume_residual_ms": {
+              "p50": 1.348,
+              "p95": 1.773,
+              "p99": 2.364
+            }
+          },
+          "aggregate": {
+            "count": 44,
+            "valid": 44,
+            "failures": {},
+            "completed_in_window": 44,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 55.391,
+              "p95": 60.038,
+              "p99": 60.299
+            },
+            "start_late_ms": {
+              "p50": 0.822,
+              "p95": 1.678,
+              "p99": 35.551
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {
+              "checkout": {
+                "p50": 0.237,
+                "p95": 0.285,
+                "p99": 0.531
+              },
+              "lease": {
+                "p50": 2.887,
+                "p95": 3.492,
+                "p99": 5.506
+              },
+              "db": {
+                "p50": 0.766,
+                "p95": 1.131,
+                "p99": 2.36
+              },
+              "thread_wait": {
+                "p50": 0.948,
+                "p95": 1.139,
+                "p99": 2.103
+              },
+              "thread_run": {
+                "p50": 2.848,
+                "p95": 3.263,
+                "p99": 5.148
+              },
+              "bridge": {
+                "p50": 5.143,
+                "p95": 5.763,
+                "p99": 9.447
+              },
+              "thread_calls": {
+                "p50": 15,
+                "p95": 15,
+                "p99": 15
+              },
+              "lag": {
+                "p50": 0.182,
+                "p95": 0.501,
+                "p99": 0.979
+              },
+              "app": {
+                "p50": 5.683,
+                "p95": 6.341,
+                "p99": 10.055
+              }
+            },
+            "pool_available_before_checkout": {
+              "p50": 1,
+              "p95": 2,
+              "p99": 2
+            },
+            "pool_waiting_before_checkout": {
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "sql_by_group_ms": {
+              "record": {
+                "p50": 0.225,
+                "p95": 0.41,
+                "p99": 0.624
+              },
+              "session": {
+                "p50": 0.308,
+                "p95": 0.452,
+                "p99": 0.592
+              },
+              "user": {
+                "p50": 0.216,
+                "p95": 0.313,
+                "p99": 1.144
+              }
+            },
+            "queries_p50": 3.0,
+            "resume_residual_ms": {
+              "p50": 1.344,
+              "p95": 1.726,
+              "p99": 2.196
+            }
+          },
+          "session": {
+            "count": 9,
+            "valid": 9,
+            "failures": {},
+            "completed_in_window": 9,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 55.82,
+              "p95": 56.233,
+              "p99": 56.233
+            },
+            "start_late_ms": {
+              "p50": 0.802,
+              "p95": 1.072,
+              "p99": 1.072
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {
+              "checkout": {
+                "p50": 0.248,
+                "p95": 0.334,
+                "p99": 0.334
+              },
+              "lease": {
+                "p50": 2.686,
+                "p95": 3.006,
+                "p99": 3.006
+              },
+              "db": {
+                "p50": 0.625,
+                "p95": 0.793,
+                "p99": 0.793
+              },
+              "thread_wait": {
+                "p50": 0.351,
+                "p95": 0.54,
+                "p99": 0.54
+              },
+              "thread_run": {
+                "p50": 4.321,
+                "p95": 4.958,
+                "p99": 4.958
+              },
+              "bridge": {
+                "p50": 8.967,
+                "p95": 10.175,
+                "p99": 10.175
+              },
+              "thread_calls": {
+                "p50": 4,
+                "p95": 4,
+                "p99": 4
+              },
+              "lag": {
+                "p50": 0.162,
+                "p95": 0.525,
+                "p99": 0.525
+              },
+              "app": {
+                "p50": 5.457,
+                "p95": 6.047,
+                "p99": 6.047
+              }
+            },
+            "pool_available_before_checkout": {
+              "p50": 1,
+              "p95": 2,
+              "p99": 2
+            },
+            "pool_waiting_before_checkout": {
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "sql_by_group_ms": {
+              "session": {
+                "p50": 0.306,
+                "p95": 0.527,
+                "p99": 0.527
+              },
+              "user": {
+                "p50": 0.266,
+                "p95": 0.337,
+                "p99": 0.337
+              }
+            },
+            "queries_p50": 2,
+            "resume_residual_ms": {
+              "p50": 4.266,
+              "p95": 4.843,
+              "p99": 4.843
+            }
+          }
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 3,
+          "app": {
+            "peak_rss_mib": 202.273,
+            "cpu_seconds": 2.05,
+            "peak_threads": 16
+          },
+          "postgres": {
+            "peak_rss_mib": 154.285,
+            "cpu_seconds": 0.19,
+            "peak_threads": 10
+          },
+          "driver": {
+            "peak_rss_mib": 39.426,
+            "cpu_seconds": 0.69,
+            "peak_threads": 1
+          },
+          "provider": {
+            "peak_rss_mib": 29.0,
+            "cpu_seconds": 0.01,
+            "peak_threads": 1
+          }
+        }
+      },
+      "01-external-100": {
+        "users": 100,
+        "seconds": 10,
+        "rate": 25.0,
+        "mix": "external",
+        "offered": 250,
+        "late_or_busy": 0,
+        "completed": 250,
+        "valid": 250,
+        "completed_rps": 24.6,
+        "completed_in_window": 246,
+        "completed_in_drain": 4,
+        "missed_by_operation": {},
+        "driver_loop_lag_ms": {
+          "p50": 0.743,
+          "p95": 1.972,
+          "p99": 2.534
+        },
+        "groups": {
+          "external": {
+            "count": 250,
+            "valid": 250,
+            "failures": {},
+            "completed_in_window": 246,
+            "completed_in_drain": 4,
+            "latency_ms": {
+              "p50": 128.509,
+              "p95": 171.438,
+              "p99": 175.869
+            },
+            "start_late_ms": {
+              "p50": 0.773,
+              "p95": 1.799,
+              "p99": 2.139
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 16,
+            "provider_calls": 750,
+            "profile": {
+              "checkout": {
+                "p50": 0.241,
+                "p95": 0.307,
+                "p99": 0.458
+              },
+              "lease": {
+                "p50": 1.49,
+                "p95": 1.735,
+                "p99": 2.637
+              },
+              "db": {
+                "p50": 0.588,
+                "p95": 0.704,
+                "p99": 0.903
+              },
+              "thread_wait": {
+                "p50": 1.073,
+                "p95": 1.263,
+                "p99": 1.73
+              },
+              "thread_run": {
+                "p50": 2.384,
+                "p95": 2.744,
+                "p99": 3.151
+              },
+              "bridge": {
+                "p50": 5.047,
+                "p95": 5.639,
+                "p99": 10.557
+              },
+              "thread_calls": {
+                "p50": 16,
+                "p95": 16,
+                "p99": 16
+              },
+              "lag": {
+                "p50": 0.839,
+                "p95": 3.537,
+                "p99": 5.117
+              },
+              "app": {
+                "p50": 120.801,
+                "p95": 142.058,
+                "p99": 148.127
+              }
+            },
+            "pool_available_before_checkout": {
+              "p50": 2,
+              "p95": 2,
+              "p99": 2
+            },
+            "pool_waiting_before_checkout": {
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "sql_by_group_ms": {
+              "session": {
+                "p50": 0.335,
+                "p95": 0.4,
+                "p99": 0.471
+              },
+              "user": {
+                "p50": 0.243,
+                "p95": 0.317,
+                "p99": 0.397
+              }
+            },
+            "queries_p50": 2.0,
+            "resume_residual_ms": {
+              "p50": 1.586,
+              "p95": 1.894,
+              "p99": 6.413
+            }
+          }
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 3,
+          "app": {
+            "peak_rss_mib": 206.773,
+            "cpu_seconds": 3.03,
+            "peak_threads": 19
+          },
+          "postgres": {
+            "peak_rss_mib": 154.285,
+            "cpu_seconds": 0.1,
+            "peak_threads": 10
+          },
+          "driver": {
+            "peak_rss_mib": 35.0,
+            "cpu_seconds": 0.53,
+            "peak_threads": 1
+          },
+          "provider": {
+            "peak_rss_mib": 29.0,
+            "cpu_seconds": 0.3,
+            "peak_threads": 1
+          }
+        }
+      },
+      "02-login-100": {
+        "users": 100,
+        "seconds": 12,
+        "rate": 5.0,
+        "mix": "login",
+        "offered": 60,
+        "late_or_busy": 0,
+        "completed": 60,
+        "valid": 60,
+        "completed_rps": 5.0,
+        "completed_in_window": 60,
+        "completed_in_drain": 0,
+        "missed_by_operation": {},
+        "driver_loop_lag_ms": {
+          "p50": 0.58,
+          "p95": 2.041,
+          "p99": 8.924
+        },
+        "groups": {
+          "login": {
+            "count": 60,
+            "valid": 60,
+            "failures": {},
+            "completed_in_window": 60,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 128.1,
+              "p95": 156.38,
+              "p99": 171.634
+            },
+            "start_late_ms": {
+              "p50": 0.952,
+              "p95": 1.844,
+              "p99": 2.426
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          }
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 3,
+          "app": {
+            "peak_rss_mib": 307.473,
+            "cpu_seconds": 8.75,
+            "peak_threads": 25
+          },
+          "postgres": {
+            "peak_rss_mib": 155.535,
+            "cpu_seconds": 0.19,
+            "peak_threads": 10
+          },
+          "driver": {
+            "peak_rss_mib": 34.477,
+            "cpu_seconds": 0.42,
+            "peak_threads": 1
+          },
+          "provider": {
+            "peak_rss_mib": 29.0,
+            "cpu_seconds": 0.02,
+            "peak_threads": 1
+          }
+        }
+      },
+      "03-persistent-100": {
+        "users": 100,
+        "seconds": 15,
+        "rate": null,
+        "mix": "persistent",
+        "offered": 800,
+        "late_or_busy": 0,
+        "completed": 800,
+        "valid": 800,
+        "completed_rps": 53.333333333333336,
+        "completed_in_window": 800,
+        "completed_in_drain": 0,
+        "missed_by_operation": {},
+        "driver_loop_lag_ms": {
+          "p50": 0.412,
+          "p95": 1.025,
+          "p99": 1.677
+        },
+        "groups": {
+          "persistent": {
+            "count": 800,
+            "valid": 800,
+            "failures": {},
+            "completed_in_window": 800,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 1.848,
+              "p95": 29.885,
+              "p99": 52.399
+            },
+            "start_late_ms": {
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {
+              "p50": 133.442,
+              "p95": 209.226,
+              "p99": 216.146
+            },
+            "rtt_ms": {
+              "p50": 1.848,
+              "p95": 29.885,
+              "p99": 52.399
+            },
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          }
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 3,
+          "app": {
+            "peak_rss_mib": 214.23,
+            "cpu_seconds": 1.74,
+            "peak_threads": 18
+          },
+          "postgres": {
+            "peak_rss_mib": 157.285,
+            "cpu_seconds": 0.26,
+            "peak_threads": 10
+          },
+          "driver": {
+            "peak_rss_mib": 38.309,
+            "cpu_seconds": 0.22,
+            "peak_threads": 1
+          },
+          "provider": {
+            "peak_rss_mib": 29.0,
+            "cpu_seconds": 0.03,
+            "peak_threads": 1
+          }
+        }
+      },
+      "04-persistent-500": {
+        "users": 500,
+        "seconds": 25,
+        "rate": null,
+        "mix": "persistent",
+        "offered": 6129,
+        "late_or_busy": 0,
+        "completed": 6129,
+        "valid": 6129,
+        "completed_rps": 245.16,
+        "completed_in_window": 6129,
+        "completed_in_drain": 0,
+        "missed_by_operation": {},
+        "driver_loop_lag_ms": {
+          "p50": 0.601,
+          "p95": 1.247,
+          "p99": 2.108
+        },
+        "groups": {
+          "persistent": {
+            "count": 6129,
+            "valid": 6129,
+            "failures": {},
+            "completed_in_window": 6129,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 2.366,
+              "p95": 121.503,
+              "p99": 227.29
+            },
+            "start_late_ms": {
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {
+              "p50": 528.616,
+              "p95": 952.382,
+              "p99": 957.714
+            },
+            "rtt_ms": {
+              "p50": 2.366,
+              "p95": 121.503,
+              "p99": 227.29
+            },
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          }
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 3,
+          "app": {
+            "peak_rss_mib": 246.23,
+            "cpu_seconds": 15.05,
+            "peak_threads": 18
+          },
+          "postgres": {
+            "peak_rss_mib": 162.91,
+            "cpu_seconds": 2.64,
+            "peak_threads": 10
+          },
+          "driver": {
+            "peak_rss_mib": 64.082,
+            "cpu_seconds": 1.9,
+            "peak_threads": 1
+          },
+          "provider": {
+            "peak_rss_mib": 29.0,
+            "cpu_seconds": 0.03,
+            "peak_threads": 1
+          }
+        }
+      }
+    }
+  },
+  "simultaneous-verified": {
+    "environment": {
+      "release": "0.1.0a9",
+      "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "python": "3.12.3",
+      "postgres": 170011,
+      "logical_cpus": 12,
+      "machine_ram": 8190640128,
+      "workers": 2,
+      "pool_per_worker": 8,
+      "users_seeded": 1000,
+      "rows_per_user": 100,
+      "app_startup_ms": 1202.0822449999855,
+      "provider_startup_ms": 384.954773000004,
+      "fixture_seconds": 20.254118948999974,
+      "profile": false,
+      "hold_outbound": false,
+      "auth_ip_budget_override": 400,
+      "reuse_outbound": false,
+      "managed_outbound": true,
+      "trace": false,
+      "wire_timing": false,
+      "file_bytes": 4096,
+      "ledger_rows": 0,
+      "socket_stagger": 0.003,
+      "socket_profile": false,
+      "driver_sha256": "aeb655d22aeb624a03743d8730ffd31696404661da6c68dd38344e6523dd463a"
+    },
+    "integrity": {
+      "required_records": 100000,
+      "owned_records": 100000,
+      "incorrect_owner_labels": 0,
+      "required_assets": 1000,
+      "assets": 1000,
+      "inconsistent_assets": 0,
+      "missing_files": 0,
+      "leftover_create_delete_records": 0,
+      "socket_leases_at_end": 0,
+      "mismatched_writes": 0,
+      "quiet_read_execution_ms": 0.113,
+      "quiet_read_planning_ms": 0.084,
+      "correct": true,
+      "invalid_success_responses": 0
+    },
+    "trials": {
+      "00-persistent-500": {
+        "users": 500,
+        "seconds": 40,
+        "rate": null,
+        "mix": "persistent",
+        "offered": 9647,
+        "late_or_busy": 0,
+        "completed": 9647,
+        "valid": 9647,
+        "completed_rps": 241.175,
+        "completed_in_window": 9647,
+        "completed_in_drain": 0,
+        "missed_by_operation": {},
+        "driver_loop_lag_ms": {
+          "p50": 0.629,
+          "p95": 1.549,
+          "p99": 2.085
+        },
+        "groups": {
+          "persistent": {
+            "count": 9647,
+            "valid": 9647,
+            "failures": {},
+            "completed_in_window": 9647,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 4.067,
+              "p95": 150.742,
+              "p99": 362.157
+            },
+            "start_late_ms": {
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {
+              "p50": 1260.883,
+              "p95": 1571.973,
+              "p99": 1582.008
+            },
+            "rtt_ms": {
+              "p50": 4.067,
+              "p95": 150.742,
+              "p99": 362.157
+            },
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          }
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 2,
+          "app": {
+            "peak_rss_mib": 242.688,
+            "cpu_seconds": 29.96,
+            "peak_threads": 17
+          },
+          "postgres": {
+            "peak_rss_mib": 129.969,
+            "cpu_seconds": 5.04,
+            "peak_threads": 9
+          },
+          "driver": {
+            "peak_rss_mib": 66.77,
+            "cpu_seconds": 3.33,
+            "peak_threads": 1
+          },
+          "provider": {
+            "peak_rss_mib": 28.941,
+            "cpu_seconds": 0.04,
+            "peak_threads": 1
+          }
+        }
+      },
+      "01-fixed-mix-150": {
+        "seconds": 20,
+        "offered": 600,
+        "missed_by_workload": {
+          "crud": 0,
+          "login": 0
+        },
+        "late_or_busy": 0,
+        "completed": 600,
+        "valid": 600,
+        "completed_rps": 29.95,
+        "completed_in_window": 599,
+        "completed_in_drain": 1,
+        "groups": {
+          "aggregate": {
+            "count": 65,
+            "valid": 65,
+            "valid_in_window": 65,
+            "latency_ms": {
+              "p50": 64.153,
+              "p95": 98.457,
+              "p99": 188.878
+            }
+          },
+          "login": {
+            "count": 100,
+            "valid": 100,
+            "valid_in_window": 100,
+            "latency_ms": {
+              "p50": 202.645,
+              "p95": 342.171,
+              "p99": 356.069
+            }
+          },
+          "read": {
+            "count": 340,
+            "valid": 340,
+            "valid_in_window": 339,
+            "latency_ms": {
+              "p50": 68.479,
+              "p95": 142.108,
+              "p99": 186.538
+            }
+          },
+          "write": {
+            "count": 95,
+            "valid": 95,
+            "valid_in_window": 95,
+            "latency_ms": {
+              "p50": 59.843,
+              "p95": 109.68,
+              "p99": 210.079
+            }
+          }
+        },
+        "voice_min_sampled_active": 50,
+        "voice_frames_received": 50000,
+        "voice_frames_expected": 50000,
+        "voice_rtt_ms": {
+          "p50": 26.512,
+          "p95": 67.247,
+          "p99": 102.628
+        },
+        "voice_frame_lateness_ms": {
+          "p50": 2.304,
+          "p95": 13.403,
+          "p99": 21.234
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 6,
+          "app": {
+            "peak_rss_mib": 347.121,
+            "cpu_seconds": 37.95,
+            "peak_threads": 28
+          },
+          "postgres": {
+            "peak_rss_mib": 236.641,
+            "cpu_seconds": 1.15,
+            "peak_threads": 13
+          },
+          "driver": {
+            "peak_rss_mib": 43.57,
+            "cpu_seconds": 7.02,
+            "peak_threads": 1
+          },
+          "provider": {
+            "peak_rss_mib": 28.941,
+            "cpu_seconds": 0.02,
+            "peak_threads": 1
+          }
+        }
+      },
+      "02-crud-100": {
+        "users": 100,
+        "seconds": 12,
+        "rate": 25.0,
+        "mix": "crud",
+        "offered": 300,
+        "late_or_busy": 0,
+        "completed": 300,
+        "valid": 300,
+        "completed_rps": 24.916666666666668,
+        "completed_in_window": 299,
+        "completed_in_drain": 1,
+        "missed_by_operation": {},
+        "driver_loop_lag_ms": {
+          "p50": 0.766,
+          "p95": 2.216,
+          "p99": 3.318
+        },
+        "groups": {
+          "read": {
+            "count": 195,
+            "valid": 195,
+            "failures": {},
+            "completed_in_window": 194,
+            "completed_in_drain": 1,
+            "latency_ms": {
+              "p50": 54.326,
+              "p95": 60.081,
+              "p99": 62.593
+            },
+            "start_late_ms": {
+              "p50": 0.804,
+              "p95": 1.779,
+              "p99": 2.066
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "write": {
+            "count": 52,
+            "valid": 52,
+            "failures": {},
+            "completed_in_window": 52,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 54.388,
+              "p95": 62.722,
+              "p99": 63.539
+            },
+            "start_late_ms": {
+              "p50": 0.821,
+              "p95": 1.389,
+              "p99": 1.878
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "aggregate": {
+            "count": 44,
+            "valid": 44,
+            "failures": {},
+            "completed_in_window": 44,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 17.287,
+              "p95": 59.346,
+              "p99": 62.357
+            },
+            "start_late_ms": {
+              "p50": 0.906,
+              "p95": 1.683,
+              "p99": 2.154
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "session": {
+            "count": 9,
+            "valid": 9,
+            "failures": {},
+            "completed_in_window": 9,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 12.308,
+              "p95": 58.812,
+              "p99": 58.812
+            },
+            "start_late_ms": {
+              "p50": 0.662,
+              "p95": 1.406,
+              "p99": 1.406
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          }
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 6,
+          "app": {
+            "peak_rss_mib": 247.477,
+            "cpu_seconds": 1.94,
+            "peak_threads": 19
+          },
+          "postgres": {
+            "peak_rss_mib": 240.891,
+            "cpu_seconds": 0.2,
+            "peak_threads": 13
+          },
+          "driver": {
+            "peak_rss_mib": 34.848,
+            "cpu_seconds": 0.77,
+            "peak_threads": 1
+          },
+          "provider": {
+            "peak_rss_mib": 28.941,
+            "cpu_seconds": 0.01,
+            "peak_threads": 1
+          }
+        }
+      },
+      "03-crud-500": {
+        "users": 500,
+        "seconds": 15,
+        "rate": 250.0,
+        "mix": "crud",
+        "offered": 3750,
+        "late_or_busy": 2557,
+        "completed": 1193,
+        "valid": 1193,
+        "completed_rps": 48.93333333333333,
+        "completed_in_window": 734,
+        "completed_in_drain": 459,
+        "missed_by_operation": {
+          "read": {
+            "actor_busy": 1594
+          },
+          "write": {
+            "actor_busy": 484
+          },
+          "aggregate": {
+            "actor_busy": 348
+          },
+          "session": {
+            "actor_busy": 131
+          }
+        },
+        "driver_loop_lag_ms": {
+          "p50": 84.449,
+          "p95": 119.16,
+          "p99": 136.034
+        },
+        "groups": {
+          "read": {
+            "count": 719,
+            "valid": 719,
+            "failures": {},
+            "completed_in_window": 447,
+            "completed_in_drain": 272,
+            "latency_ms": {
+              "p50": 5601.622,
+              "p95": 17645.779,
+              "p99": 19991.87
+            },
+            "start_late_ms": {
+              "p50": 83.732,
+              "p95": 143.034,
+              "p99": 167.1
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "write": {
+            "count": 232,
+            "valid": 232,
+            "failures": {},
+            "completed_in_window": 145,
+            "completed_in_drain": 87,
+            "latency_ms": {
+              "p50": 5238.462,
+              "p95": 17008.854,
+              "p99": 20222.31
+            },
+            "start_late_ms": {
+              "p50": 84.379,
+              "p95": 151.67,
+              "p99": 180.384
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "aggregate": {
+            "count": 186,
+            "valid": 186,
+            "failures": {},
+            "completed_in_window": 116,
+            "completed_in_drain": 70,
+            "latency_ms": {
+              "p50": 5209.411,
+              "p95": 15465.467,
+              "p99": 19041.874
+            },
+            "start_late_ms": {
+              "p50": 80.601,
+              "p95": 142.751,
+              "p99": 160.756
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "session": {
+            "count": 56,
+            "valid": 56,
+            "failures": {},
+            "completed_in_window": 26,
+            "completed_in_drain": 30,
+            "latency_ms": {
+              "p50": 7293.857,
+              "p95": 17606.483,
+              "p99": 20281.405
+            },
+            "start_late_ms": {
+              "p50": 92.95,
+              "p95": 144.593,
+              "p99": 218.863
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          }
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 8,
+          "app": {
+            "peak_rss_mib": 248.102,
+            "cpu_seconds": 5.33,
+            "peak_threads": 20
+          },
+          "postgres": {
+            "peak_rss_mib": 331.227,
+            "cpu_seconds": 0.49,
+            "peak_threads": 15
+          },
+          "driver": {
+            "peak_rss_mib": 42.531,
+            "cpu_seconds": 4.54,
+            "peak_threads": 1
+          },
+          "provider": {
+            "peak_rss_mib": 28.941,
+            "cpu_seconds": 0.02,
+            "peak_threads": 1
+          }
+        }
+      },
+      "04-crud-100": {
+        "users": 100,
+        "seconds": 25,
+        "rate": 25.0,
+        "mix": "crud",
+        "offered": 625,
+        "late_or_busy": 0,
+        "completed": 625,
+        "valid": 625,
+        "completed_rps": 25.0,
+        "completed_in_window": 625,
+        "completed_in_drain": 0,
+        "missed_by_operation": {},
+        "driver_loop_lag_ms": {
+          "p50": 0.792,
+          "p95": 2.214,
+          "p99": 3.677
+        },
+        "groups": {
+          "read": {
+            "count": 388,
+            "valid": 388,
+            "failures": {},
+            "completed_in_window": 388,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 17.976,
+              "p95": 58.983,
+              "p99": 62.162
+            },
+            "start_late_ms": {
+              "p50": 0.783,
+              "p95": 1.71,
+              "p99": 2.104
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "write": {
+            "count": 122,
+            "valid": 122,
+            "failures": {},
+            "completed_in_window": 122,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 54.841,
+              "p95": 62.378,
+              "p99": 63.218
+            },
+            "start_late_ms": {
+              "p50": 0.818,
+              "p95": 1.481,
+              "p99": 1.876
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "aggregate": {
+            "count": 93,
+            "valid": 93,
+            "failures": {},
+            "completed_in_window": 93,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 54.605,
+              "p95": 60.384,
+              "p99": 62.933
+            },
+            "start_late_ms": {
+              "p50": 0.763,
+              "p95": 1.739,
+              "p99": 2.1
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "session": {
+            "count": 22,
+            "valid": 22,
+            "failures": {},
+            "completed_in_window": 22,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 15.742,
+              "p95": 58.622,
+              "p99": 62.008
+            },
+            "start_late_ms": {
+              "p50": 0.715,
+              "p95": 1.288,
+              "p99": 1.888
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          }
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 8,
+          "app": {
+            "peak_rss_mib": 248.727,
+            "cpu_seconds": 4.42,
+            "peak_threads": 19
+          },
+          "postgres": {
+            "peak_rss_mib": 350.477,
+            "cpu_seconds": 0.47,
+            "peak_threads": 15
+          },
+          "driver": {
+            "peak_rss_mib": 35.172,
+            "cpu_seconds": 1.72,
+            "peak_threads": 1
+          },
+          "provider": {
+            "peak_rss_mib": 28.941,
+            "cpu_seconds": 0.03,
+            "peak_threads": 1
+          }
+        }
+      }
+    }
+  },
+  "sustained": {
+    "environment": {
+      "release": "0.1.0a9",
+      "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "python": "3.12.3",
+      "postgres": 170011,
+      "logical_cpus": 12,
+      "machine_ram": 8190640128,
+      "workers": 2,
+      "pool_per_worker": 8,
+      "users_seeded": 1000,
+      "rows_per_user": 100,
+      "app_startup_ms": 874.2488410000533,
+      "provider_startup_ms": 244.3774040000335,
+      "fixture_seconds": 19.750110591000066,
+      "profile": false,
+      "hold_outbound": false,
+      "auth_ip_budget_override": null,
+      "reuse_outbound": false,
+      "managed_outbound": true,
+      "trace": false,
+      "wire_timing": false,
+      "file_bytes": 4096,
+      "ledger_rows": 0,
+      "socket_stagger": 0.003,
+      "socket_profile": false,
+      "driver_sha256": "aeb655d22aeb624a03743d8730ffd31696404661da6c68dd38344e6523dd463a"
+    },
+    "integrity": {
+      "required_records": 100000,
+      "owned_records": 100000,
+      "incorrect_owner_labels": 0,
+      "required_assets": 1000,
+      "assets": 1000,
+      "inconsistent_assets": 0,
+      "missing_files": 0,
+      "leftover_create_delete_records": 0,
+      "socket_leases_at_end": 0,
+      "mismatched_writes": 0,
+      "quiet_read_execution_ms": 0.094,
+      "quiet_read_planning_ms": 0.081,
+      "correct": true,
+      "invalid_success_responses": 0
+    },
+    "trials": {
+      "00-mixed-100": {
+        "users": 100,
+        "seconds": 60,
+        "rate": null,
+        "mix": "mixed",
+        "offered": 4015,
+        "late_or_busy": 0,
+        "completed": 4015,
+        "valid": 4015,
+        "completed_rps": 66.75,
+        "completed_in_window": 4005,
+        "completed_in_drain": 10,
+        "missed_by_operation": {},
+        "driver_loop_lag_ms": {
+          "p50": 28.277,
+          "p95": 55.68,
+          "p99": 76.087
+        },
+        "groups": {
+          "read": {
+            "count": 1759,
+            "valid": 1759,
+            "failures": {},
+            "completed_in_window": 1753,
+            "completed_in_drain": 6,
+            "latency_ms": {
+              "p50": 293.384,
+              "p95": 1454.076,
+              "p99": 2506.973
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.001,
+              "p99": 0.002
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "write": {
+            "count": 613,
+            "valid": 613,
+            "failures": {},
+            "completed_in_window": 610,
+            "completed_in_drain": 3,
+            "latency_ms": {
+              "p50": 279.01,
+              "p95": 1549.213,
+              "p99": 2251.105
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.001,
+              "p99": 0.002
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "aggregate": {
+            "count": 423,
+            "valid": 423,
+            "failures": {},
+            "completed_in_window": 422,
+            "completed_in_drain": 1,
+            "latency_ms": {
+              "p50": 242.175,
+              "p95": 1450.564,
+              "p99": 2576.052
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.001,
+              "p99": 0.002
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "session": {
+            "count": 203,
+            "valid": 203,
+            "failures": {},
+            "completed_in_window": 203,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 272.021,
+              "p95": 1283.373,
+              "p99": 1997.367
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.001,
+              "p99": 0.004
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "external": {
+            "count": 403,
+            "valid": 403,
+            "failures": {},
+            "completed_in_window": 403,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 375.005,
+              "p95": 1542.897,
+              "p99": 2224.865
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.001,
+              "p99": 0.002
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 139,
+            "provider_calls": 1209,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "upload": {
+            "count": 73,
+            "valid": 73,
+            "failures": {},
+            "completed_in_window": 73,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 358.326,
+              "p95": 1159.095,
+              "p99": 2325.664
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.001,
+              "p99": 0.006
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "download": {
+            "count": 201,
+            "valid": 201,
+            "failures": {},
+            "completed_in_window": 201,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 299.059,
+              "p95": 1372.352,
+              "p99": 2092.193
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.001,
+              "p99": 0.002
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "ai": {
+            "count": 207,
+            "valid": 207,
+            "failures": {},
+            "completed_in_window": 207,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 339.415,
+              "p95": 1438.557,
+              "p99": 2497.356
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.001,
+              "p99": 0.002
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "stream": {
+            "count": 133,
+            "valid": 133,
+            "failures": {},
+            "completed_in_window": 133,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 539.831,
+              "p95": 1504.093,
+              "p99": 2687.342
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.002,
+              "p99": 0.002
+            },
+            "first_ms": {
+              "p50": 379.59,
+              "p95": 1369.008,
+              "p99": 2513.783
+            },
+            "gap_ms": {
+              "p50": 45.928,
+              "p95": 63.326,
+              "p99": 75.154
+            },
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          }
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 15,
+          "app": {
+            "peak_rss_mib": 224.32,
+            "cpu_seconds": 37.76,
+            "peak_threads": 37
+          },
+          "postgres": {
+            "peak_rss_mib": 494.531,
+            "cpu_seconds": 3.52,
+            "peak_threads": 23
+          },
+          "driver": {
+            "peak_rss_mib": 38.191,
+            "cpu_seconds": 18.16,
+            "peak_threads": 1
+          },
+          "provider": {
+            "peak_rss_mib": 27.73,
+            "cpu_seconds": 1.03,
+            "peak_threads": 1
+          }
+        }
+      },
+      "01-mixed-100": {
+        "users": 100,
+        "seconds": 1800,
+        "rate": null,
+        "mix": "mixed",
+        "offered": 74960,
+        "late_or_busy": 0,
+        "completed": 74960,
+        "valid": 74960,
+        "completed_rps": 41.615,
+        "completed_in_window": 74907,
+        "completed_in_drain": 53,
+        "missed_by_operation": {},
+        "driver_loop_lag_ms": {
+          "p50": 63.827,
+          "p95": 106.32,
+          "p99": 139.18
+        },
+        "groups": {
+          "read": {
+            "count": 33904,
+            "valid": 33904,
+            "failures": {},
+            "completed_in_window": 33884,
+            "completed_in_drain": 20,
+            "latency_ms": {
+              "p50": 930.939,
+              "p95": 3706.106,
+              "p99": 5827.874
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.002,
+              "p99": 0.004
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "write": {
+            "count": 11231,
+            "valid": 11231,
+            "failures": {},
+            "completed_in_window": 11223,
+            "completed_in_drain": 8,
+            "latency_ms": {
+              "p50": 958.774,
+              "p95": 3761.716,
+              "p99": 5716.491
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.002,
+              "p99": 0.002
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "aggregate": {
+            "count": 7498,
+            "valid": 7498,
+            "failures": {},
+            "completed_in_window": 7490,
+            "completed_in_drain": 8,
+            "latency_ms": {
+              "p50": 914.894,
+              "p95": 3582.0,
+              "p99": 5675.757
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.002,
+              "p99": 0.004
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "session": {
+            "count": 3751,
+            "valid": 3751,
+            "failures": {},
+            "completed_in_window": 3750,
+            "completed_in_drain": 1,
+            "latency_ms": {
+              "p50": 931.699,
+              "p95": 3708.407,
+              "p99": 5570.568
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.002,
+              "p99": 0.002
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "external": {
+            "count": 7444,
+            "valid": 7444,
+            "failures": {},
+            "completed_in_window": 7433,
+            "completed_in_drain": 11,
+            "latency_ms": {
+              "p50": 1005.437,
+              "p95": 3841.536,
+              "p99": 5803.301
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.002,
+              "p99": 0.003
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 2165,
+            "provider_calls": 22332,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "upload": {
+            "count": 1417,
+            "valid": 1417,
+            "failures": {},
+            "completed_in_window": 1417,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 1056.927,
+              "p95": 3647.455,
+              "p99": 5680.125
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.002,
+              "p99": 0.006
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "download": {
+            "count": 3772,
+            "valid": 3772,
+            "failures": {},
+            "completed_in_window": 3770,
+            "completed_in_drain": 2,
+            "latency_ms": {
+              "p50": 934.674,
+              "p95": 3883.016,
+              "p99": 5786.738
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.002,
+              "p99": 0.003
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "ai": {
+            "count": 3671,
+            "valid": 3671,
+            "failures": {},
+            "completed_in_window": 3668,
+            "completed_in_drain": 3,
+            "latency_ms": {
+              "p50": 1010.747,
+              "p95": 3736.905,
+              "p99": 5779.32
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.002,
+              "p99": 0.004
+            },
+            "first_ms": {},
+            "gap_ms": {},
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          },
+          "stream": {
+            "count": 2272,
+            "valid": 2272,
+            "failures": {},
+            "completed_in_window": 2272,
+            "completed_in_drain": 0,
+            "latency_ms": {
+              "p50": 1159.65,
+              "p95": 4012.527,
+              "p99": 6452.866
+            },
+            "start_late_ms": {
+              "p50": 0.001,
+              "p95": 0.002,
+              "p99": 0.005
+            },
+            "first_ms": {
+              "p50": 1013.688,
+              "p95": 3863.514,
+              "p99": 6283.82
+            },
+            "gap_ms": {
+              "p50": 45.765,
+              "p95": 86.95,
+              "p99": 109.375
+            },
+            "handshake_ms": {},
+            "rtt_ms": {},
+            "frames_received": 0,
+            "frames_expected": 0,
+            "unique_provider_connections": 0,
+            "provider_calls": 0,
+            "profile": {},
+            "pool_available_before_checkout": {},
+            "pool_waiting_before_checkout": {},
+            "sql_by_group_ms": {},
+            "queries_p50": null,
+            "resume_residual_ms": {}
+          }
+        },
+        "unexpected_invalid": {},
+        "in_window_resources": {
+          "postgres_connections_peak": 15,
+          "app": {
+            "peak_rss_mib": 228.914,
+            "cpu_seconds": 1168.71,
+            "peak_threads": 24,
+            "warmed_rss_median_mib": 227.152,
+            "final_rss_median_mib": 228.395,
+            "rss_growth_percent": 0.547
+          },
+          "postgres": {
+            "peak_rss_mib": 622.66,
+            "cpu_seconds": 114.45,
+            "peak_threads": 23,
+            "warmed_rss_median_mib": 589.047,
+            "final_rss_median_mib": 596.062,
+            "rss_growth_percent": 1.191
+          },
+          "driver": {
+            "peak_rss_mib": 68.527,
+            "cpu_seconds": 520.46,
+            "peak_threads": 1,
+            "warmed_rss_median_mib": 44.777,
+            "final_rss_median_mib": 65.902,
+            "rss_growth_percent": 47.178
+          },
+          "provider": {
+            "peak_rss_mib": 28.23,
+            "cpu_seconds": 28.99,
+            "peak_threads": 1,
+            "warmed_rss_median_mib": 27.98,
+            "final_rss_median_mib": 28.23,
+            "rss_growth_percent": 0.893
+          }
+        }
+      }
+    }
+  },
+  "deployment": {
+    "postgres_verify_full": true,
+    "postgres_bad_hostname_rejected": true,
+    "secure_cookies_and_csrf": true,
+    "database_and_file_restore": true,
+    "worker_replacement_ms": 205.2707820000137,
+    "download_traffic": {
+      "replacement": {
+        "200": 8
+      },
+      "revocation": {
+        "200": 120
+      },
+      "warm": {
+        "200": 4
+      },
+      "outage_and_recovery": {
+        "503": 122,
+        "200": 10
+      }
+    },
+    "direct_wss": {
+      "close_after_commit_ms": 1998.260629000015,
+      "last_echo_after_commit_ms": 1947.8356500000018,
+      "reconnect_status": 403
+    },
+    "outage_samples": [
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ],
+      [
+        200,
+        503
+      ]
+    ],
+    "recovery_after_database_started_ms": 3815.5729910000673,
+    "interrupted_write": "rolled back",
+    "committed_write": "preserved"
+  }
+}

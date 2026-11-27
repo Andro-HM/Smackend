@@ -42,6 +42,9 @@ postgres-bin/
 *.p12
 *.pfx
 credentials.json
+private-sessions.json
+pg-password
+db-password
 secrets.json
 .secrets/
 api-keys.json

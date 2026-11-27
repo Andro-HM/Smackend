@@ -64,3 +64,7 @@ Run the regression suite with `uv sync --all-extras --group integration`, then s
 ## Current storage dependency
 
 The a8 storage extra requires Pillow 13 and selects decoders from the configured file types. See the [a8 security and regression findings](PHASE_4.md#implementation-audit). The upgrade instructions above describe the Phase 2 milestone.
+
+
+The ASGI lifecycle and upgrade steps for worker-owned outbound clients are
+covered in [Phase 4 performance remediation](PHASE_4_OPTIMIZATION.md).

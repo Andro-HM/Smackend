@@ -1,14 +1,16 @@
 """App-owned synthetic workload mounted on a freshly generated Smackend project."""
 
 import asyncio
+import os
 from contextlib import nullcontext
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.db import models, transaction
 from django.db.models import Sum
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from ninja import Router, Schema
+from ninja import NinjaAPI, Router, Schema
 
 from smackend.identity.permissions import owner_scope, session_auth
 from smackend.outbound.client import AsyncClient
@@ -52,6 +54,22 @@ def listing(request):
     return list(records(request).order_by("sequence")[:25])
 
 
+comparison_api = NinjaAPI(urls_namespace="qualification_native_ninja")
+
+
+@comparison_api.get("/records", response=list[Entry], auth=session_auth)
+def ninja_read(request):
+    return listing(request)
+
+
+def django_read(request):
+    if session_auth(request) is None:
+        return JsonResponse({"detail": "Unauthorized"}, status=401)
+    values = [{"id": row.id, "sequence": row.sequence, "amount": row.amount, "text": row.text}
+              for row in listing(request)]
+    return JsonResponse(values, safe=False, json_dumps_params={"separators": (",", ":")})
+
+
 @router.get("/total")
 def total(request):
     return records(request).aggregate(total=Sum("amount"))
@@ -91,7 +109,13 @@ def release_identity(request):
 async def external(request):
     await sync_to_async(release_identity)(request)
     pooled = getattr(settings, "QUALIFICATION_OUTBOUND_CLIENT", None)
-    async with (nullcontext(pooled) if pooled else AsyncClient(provider("synthetic"))) as client:
+    if settings.QUALIFICATION_MANAGED:
+        from smackend.outbound.asgi import outbound_client
+
+        owned = outbound_client("synthetic")
+    else:
+        owned = nullcontext(pooled) if pooled else AsyncClient(provider("synthetic"))
+    async with owned as client:
         result = await asyncio.gather(*(client.request("GET", f"/wait/{name}") for name in ("a", "b", "c")))
     return {"result": len(result), "connections": [value.json()["loopback_connection"] for value in result]}
 
@@ -104,6 +128,7 @@ def seed(users, rows):
     from django.test import Client
     from django.core.files.uploadedfile import SimpleUploadedFile
 
+    file_bytes = int(os.getenv("QUALIFICATION_FILE_BYTES", "4096"))
     model = get_user_model()
     encoded = make_password(TEST_PASSWORD)
     model.objects.bulk_create([model(username=f"fixture{index:04d}", password=encoded) for index in range(users)])
@@ -121,11 +146,28 @@ def seed(users, rows):
         client = Client(enforce_csrf_checks=True, HTTP_HOST="127.0.0.1")
         client.cookies[settings.SESSION_COOKIE_NAME] = session.session_key
         client.cookies[settings.CSRF_COOKIE_NAME] = csrf
+        prefix = f"Owned text fixture {index:04d}\n".encode()
         uploaded = client.post("/api/files/", {"files": SimpleUploadedFile(
-            "fixture.txt", (f"Owned text fixture {index:04d}\n".encode() + b"x" * 4072), content_type="text/plain",
+            "fixture.txt", (prefix + b"x" * (file_bytes - len(prefix))), content_type="text/plain",
         )}, HTTP_X_CSRFTOKEN=csrf)
         if uploaded.status_code != 201:
             raise RuntimeError(f"Storage seed failed with HTTP {uploaded.status_code}")
         identities.append({"index": index, "session": session.session_key, "csrf": csrf,
-                           "file": uploaded.json()[0]["id"]})
+                           "file": uploaded.json()[0]["id"], "file_bytes": file_bytes})
+    if ledger_rows := int(os.getenv("QUALIFICATION_LEDGER_ROWS", "0")):
+        from django.utils import timezone
+        from django.utils.crypto import salted_hmac
+        from smackend.ai.models import Invocation
+        from uuid import uuid4
+
+        subjects = [salted_hmac("smackend.ai.subject", str(pk), algorithm="sha256").hexdigest()
+                    for pk in model.objects.order_by("pk").values_list("pk", flat=True)]
+        now = timezone.now()
+        for start in range(0, ledger_rows, 1000):
+            Invocation.objects.bulk_create([
+                Invocation(subject=subjects[index % len(subjects)], request_key=uuid4(), day=now.date(),
+                           active_until=now, model_alias="seed", state=Invocation.State.COMPLETE,
+                           tokens=10, cost_micros=0)
+                for index in range(start, min(start + 1000, ledger_rows))
+            ])
     return identities

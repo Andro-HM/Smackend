@@ -21,7 +21,7 @@ Open [the frontend](http://127.0.0.1:8000/) or [the Ninja API docs](http://127.0
 You can also run the same app through ASGI:
 
 ```shell
-uv run uvicorn config.asgi:application --host 127.0.0.1 --port 8000 --lifespan off --no-proxy-headers --no-access-log
+uv run uvicorn config.asgi:application --host 127.0.0.1 --port 8000 --lifespan auto --no-proxy-headers --no-access-log
 ```
 
 ## Work on the application
@@ -129,4 +129,23 @@ Storage and admin enable accounts during initialization. When enabling them late
 
 Use `--ai` for authenticated AI examples and `--realtime` for Channels. Open `/assist/` after signing in. These flags enable browser accounts. AI also enables outbound HTTP. Both examples default to deterministic offline providers.
 
-Use an ASGI server for streaming and WebSockets. Keep the browser origin in `SMACKEND_REALTIME_ORIGINS`. For example, run `uv run uvicorn config.asgi:application --host 127.0.0.1 --port 8000 --lifespan off --no-access-log --ws-max-size 4096 --ws-max-queue 8`. Microphone access requires a browser secure context. Configure real provider credentials in private environment variables only after reviewing the Phase 3 guide.
+Use an ASGI server for streaming and WebSockets. Keep the browser origin in `SMACKEND_REALTIME_ORIGINS`. For example, run `uv run uvicorn config.asgi:application --host 127.0.0.1 --port 8000 --lifespan auto --no-access-log --ws-max-size 4096 --ws-max-queue 8`. Microphone access requires a browser secure context. Configure real provider credentials in private environment variables only after reviewing the Phase 3 guide.
+
+
+### Shared outbound HTTP clients
+
+Start the generated ASGI app with Uvicorn's lifespan enabled (`--lifespan auto` or
+`--lifespan on`). Use `from smackend.outbound.asgi import outbound_client` and
+`async with outbound_client("provider_name") as client` in async views. Finish
+database work and release its connection before awaiting the provider. The
+context manager borrows a client in the managed ASGI application and owns a
+temporary client outside it. Built-in AI HTTP adapters use the same worker
+lifetime and named-provider admission budget. Different named providers have
+separate credentials and budgets. Multiply each provider's limit by the number
+of running workers, including deployment overlap, when sizing upstream capacity.
+
+Existing projects can wrap their final Django or Channels application with
+`smackend.outbound.asgi.with_outbound` and enable lifespan at startup. Applications
+with their own lifespan should integrate this wrapper at the routing boundary
+that handles Smackend's lifespan, or continue injecting explicit clients.
+`AsyncClient` remains available for explicitly owned transports and custom adapters.

@@ -6,10 +6,11 @@ import gzip
 import json
 import math
 from pathlib import Path
+from contextvars import ContextVar
 import random
 from statistics import median
 from struct import pack, unpack_from
-from time import monotonic
+from time import monotonic, perf_counter
 from uuid import uuid4
 
 import httpx
@@ -33,6 +34,51 @@ def percentiles(values):
     ordered = sorted(values)
     return {f"p{p}": round(ordered[max(0, math.ceil(p / 100 * len(ordered)) - 1)], 3)
             for p in (50, 95, 99)}
+
+
+transport_samples = ContextVar("transport_samples", default=None)
+
+
+def instrument_client_pool():
+    from httpcore._async.connection_pool import AsyncPoolRequest
+
+    original = AsyncPoolRequest.wait_for_connection
+
+    async def wait_for_connection(request, *args, **kwargs):
+        timings = transport_samples.get()
+        if not timings:
+            return await original(request, *args, **kwargs)
+        sample = timings[-1]
+        started = perf_counter()
+        try:
+            return await original(request, *args, **kwargs)
+        finally:
+            sample.setdefault("connection_assignment_ms", []).append(
+                round((perf_counter() - started) * 1000, 3)
+            )
+
+    AsyncPoolRequest.wait_for_connection = wait_for_connection
+
+
+async def trace_request(request):
+    timings = transport_samples.get()
+    if timings is None:
+        return
+    started = monotonic()
+    sample = {"transport_start": started}
+    timings.append(sample)
+
+    async def trace(name, info):
+        # Retain stage names and offsets only. HTTPX trace metadata may contain secrets.
+        sample[name] = round((monotonic() - started) * 1000, 3)
+
+    request.extensions["trace"] = trace
+
+
+async def trace_headers(response):
+    timings = transport_samples.get()
+    if timings:
+        timings[-1]["client_headers_ms"] = round((monotonic() - timings[-1]["transport_start"]) * 1000, 3)
 
 
 async def request(client, host, who, operation, iteration):
@@ -94,7 +140,8 @@ async def request(client, host, who, operation, iteration):
         return deleted.status_code, deleted.status_code == 204, created.headers.get("x-phase0-profile"), {}
     kwargs = {}
     method = "GET"
-    paths = {"read": "/api/bench/records", "aggregate": "/api/bench/total",
+    paths = {"django-read": "/baseline/django", "ninja-read": "/baseline/ninja/records",
+             "read": "/api/bench/records", "aggregate": "/api/bench/total",
              "session": "/api/account/profile", "external": "/api/bench/external",
              "write": "/api/bench/records/0", "download": f"/api/files/{who['file']}/download",
              "upload": f"/api/files/{who['file']}/replace", "ai": "/api/ai/chat", "stream": "/api/ai/stream",
@@ -103,7 +150,8 @@ async def request(client, host, who, operation, iteration):
         method, kwargs = "PUT", {"json": {"amount": iteration + 2}}
     if operation == "upload":
         method = "POST"
-        payload = (f"Owned text fixture {who['index']:04d}\n".encode() + b"x" * 4072)
+        prefix = f"Owned text fixture {who['index']:04d}\n".encode()
+        payload = prefix + b"x" * (who["file_bytes"] - len(prefix))
         kwargs = {"files": {"file": ("fixture.txt", payload, "text/plain")}}
     if operation in {"ai", "stream", "stream-long"}:
         text = LONG_STREAM_INSTRUCTION if operation == "stream-long" else "Test response"
@@ -128,8 +176,9 @@ async def request(client, host, who, operation, iteration):
     valid = response.status_code == 200
     extra = {}
     if valid and operation == "download":
-        valid = response.content.startswith(f"Owned text fixture {who['index']:04d}\n".encode())
-    elif valid and operation == "read":
+        valid = (len(response.content) == who["file_bytes"]
+                 and response.content.startswith(f"Owned text fixture {who['index']:04d}\n".encode()))
+    elif valid and operation in {"read", "django-read", "ninja-read"}:
         values = response.json()
         valid = len(values) == 25 and all(row["text"].startswith(f"Owned synthetic entry {who['index']} ")
                                          for row in values)
@@ -143,6 +192,12 @@ async def request(client, host, who, operation, iteration):
         contents = response.json()
         valid = contents.get("result") == 3
         extra["provider_connections"] = contents.get("connections", [])
+    if valid and operation == "aggregate":
+        valid = response.json().get("total") == who["total"]
+    elif valid and operation == "write":
+        who["total"] += iteration + 2 - who["amount"]
+        who["amount"] = iteration + 2
+        extra["acknowledged_write"] = [who["index"], who["amount"]]
     return response.status_code, valid, response.headers.get("x-phase0-profile"), extra
 
 
@@ -177,8 +232,10 @@ async def duplex(socket, actor):
 
 async def run(args, identities):
     profiles = {op: [] for op in (*MIXES["mixed"], "login", "signup", "echo", "voice", "control",
-                                 "persistent", "create-delete", "stream-long", "voice-direct", "voice-duplex")}
-    output = gzip.open(args.raw, "wt", encoding="utf-8")
+                                 "persistent", "create-delete", "stream-long", "voice-direct", "voice-duplex",
+                                 "django-read", "ninja-read")}
+    samples_by_completion = []
+    missed_by_operation = {}
     stats = {"missed": 0, "offered": 0, "loop_ms": []}
     start = monotonic() + 0.25
     stop = start + args.seconds
@@ -186,27 +243,39 @@ async def run(args, identities):
     busy = set()
     mix = MIXES.get(args.workload, {args.workload: 100})
 
-    async with httpx.AsyncClient(base_url=args.url, limits=httpx.Limits(
+    hooks = {"request": [trace_request], "response": [trace_headers]} if args.trace else None
+    async with httpx.AsyncClient(base_url=args.url, event_hooks=hooks, limits=httpx.Limits(
         max_connections=args.users * 2, max_keepalive_connections=args.users,
     ), trust_env=False, timeout=12) as client:
         def record(sample):
-            output.write(json.dumps(sample, separators=(",", ":")) + "\n")
+            samples_by_completion.append(sample)
             profiles[sample["op"]].append(sample)
 
         async def emit(who, operation, iteration, scheduled):
             began = monotonic()
+            timings = []
+            token = transport_samples.set(timings if args.trace else None)
             try:
                 code, valid, profile, extra = await request(client, args.url, who, operation, iteration)
                 if extra.get("first"):
                     extra["first_ms"] = (extra.pop("first") - scheduled) * 1000
             except Exception as error:
                 code, valid, profile, extra = 0, False, None, {"error": type(error).__name__}
-            elapsed = monotonic() - scheduled
+            finally:
+                transport_samples.reset(token)
+            ended = monotonic()
+            for exchange in timings:
+                started = exchange.pop("transport_start")
+                exchange["request_hook_ms"] = round((started - began) * 1000, 3)
+                exchange["operation_end_ms"] = round((ended - started) * 1000, 3)
+            if timings:
+                extra["transport"] = timings
+            elapsed = ended - scheduled
             sample = {"at": round(scheduled - start, 4), "op": operation, "status": code, "valid": valid,
-                      "ms": round(1000 * elapsed, 3), "late_ms": round(1000 * (began - scheduled), 3),
+                      "ms": round(1000 * elapsed, 3), "in_window": scheduled + elapsed <= stop, "late_ms": round(1000 * (began - scheduled), 3),
                       **extra}
             if profile:
-                sample["profile"] = json.loads(profile)
+                sample["profile"] = profile
             record(sample)
             busy.discard(who["index"])
 
@@ -219,30 +288,38 @@ async def run(args, identities):
         monitor = asyncio.create_task(loop_monitor())
         rng = random.Random(args.seed)
         seq = 0
-        if args.workload == "persistent":
+        if args.workload in {"persistent", "reconnect"}:
             async def persistent(who):
-                await asyncio.sleep(max(0, start - monotonic()) + who["index"] * 0.003)
-                opened = monotonic()
-                try:
-                    async with connect(args.url.replace("http", "ws", 1) + "/ws/realtime/", origin=args.url,
-                                       additional_headers={"Cookie": f"sessionid={who['session']}"},
-                                       open_timeout=10, close_timeout=1) as socket:
-                        connected = monotonic()
-                        while monotonic() < stop:
-                            payload = {"type": "echo", "text": str(who["index"])}
-                            sent = monotonic()
-                            await socket.send(json.dumps(payload))
-                            answer = json.loads(await asyncio.wait_for(socket.recv(), 3))
-                            ms = (monotonic() - sent) * 1000
-                            stats["offered"] += 1
-                            record({"at": sent - start, "op": "persistent", "status": 101,
-                                    "valid": answer == payload, "ms": ms, "rtt_ms": [ms], "late_ms": 0,
-                                    "open_ms": (connected - opened) * 1000})
-                            await asyncio.sleep(2)
-                except Exception as error:
-                    stats["offered"] += 1
-                    record({"at": opened - start, "op": "persistent", "status": 0, "valid": False,
-                            "ms": (monotonic() - opened) * 1000, "late_ms": 0, "error": type(error).__name__})
+                await asyncio.sleep(max(0, start - monotonic()) + who["index"] * args.socket_stagger)
+                while monotonic() < stop:
+                    opened = monotonic()
+                    try:
+                        async with connect(args.url.replace("http", "ws", 1) + "/ws/realtime/", origin=args.url,
+                                           additional_headers={"Cookie": f"sessionid={who['session']}"},
+                                           open_timeout=10, close_timeout=1) as socket:
+                            connected = monotonic()
+                            while monotonic() < stop:
+                                payload = {"type": "echo", "text": str(who["index"])}
+                                sent = monotonic()
+                                await socket.send(json.dumps(payload))
+                                answer = json.loads(await asyncio.wait_for(socket.recv(), 3))
+                                ms = (monotonic() - sent) * 1000
+                                stats["offered"] += 1
+                                record({"at": sent - start, "op": "persistent", "status": 101,
+                                        "valid": answer == payload, "ms": ms, "rtt_ms": [ms], "late_ms": 0,
+                                        "connected_at": connected - start,
+                                        "open_ms": (connected - opened) * 1000, "in_window": monotonic() <= stop})
+                                if args.workload == "reconnect":
+                                    break
+                                await asyncio.sleep(2)
+                    except Exception as error:
+                        stats["offered"] += 1
+                        record({"at": opened - start, "op": "persistent", "status": 0, "valid": False,
+                                "ms": (monotonic() - opened) * 1000, "late_ms": 0, "error": type(error).__name__,
+                                "in_window": monotonic() <= stop})
+                    if args.workload == "persistent":
+                        break
+                    await asyncio.sleep(2)
             await asyncio.gather(*(persistent(who) for who in identities[:args.users]))
         elif args.rate:
             while (target := start + seq / args.rate) < stop:
@@ -254,6 +331,9 @@ async def run(args, identities):
                 seq += 1
                 stats["offered"] += 1
                 if who["index"] in busy or monotonic() - target > 0.25:
+                    reason = "actor_busy" if who["index"] in busy else "scheduler_late"
+                    counts = missed_by_operation.setdefault(operation, {})
+                    counts[reason] = counts.get(reason, 0) + 1
                     stats["missed"] += 1
                     continue
                 busy.add(who["index"])
@@ -275,7 +355,11 @@ async def run(args, identities):
             await asyncio.gather(*(user(who, idx) for idx, who in enumerate(identities[:args.users])))
         await asyncio.gather(*inflight)
         await monitor
-    output.close()
+    with gzip.open(args.raw, "wt", encoding="utf-8") as output:
+        for sample in samples_by_completion:
+            if "profile" in sample:
+                sample["profile"] = json.loads(sample["profile"])
+            output.write(json.dumps(sample, separators=(",", ":")) + "\n")
     groups = {}
     for name, samples in profiles.items():
         if not samples:
@@ -289,10 +373,14 @@ async def run(args, identities):
                 statuses[key] = statuses.get(key, 0) + 1
         groups[name] = {
             "count": len(samples), "valid": len(good), "failures": statuses,
+            "completed_in_window": sum(row["in_window"] for row in samples),
+            "completed_in_drain": sum(not row["in_window"] for row in samples),
             "latency_ms": percentiles([row["ms"] for row in samples]),
             "start_late_ms": percentiles([row["late_ms"] for row in samples]),
             "first_ms": percentiles([row["first_ms"] for row in samples if "first_ms" in row]),
             "gap_ms": percentiles([delay for row in samples for delay in row.get("gap_ms", [])]),
+            "handshake_ms": percentiles(list({row["connected_at"]: row["open_ms"] for row in samples
+                                              if "connected_at" in row}.values())),
             "rtt_ms": percentiles([delay for row in samples for delay in row.get("rtt_ms", [])]),
             "frames_received": sum(row.get("frames_received", 0) for row in samples),
             "frames_expected": sum(row.get("frames_expected", 0) for row in samples),
@@ -300,13 +388,23 @@ async def run(args, identities):
             "provider_calls": sum(len(row.get("provider_connections", ())) for row in samples),
             "profile": {key: percentiles([row[key] for row in p]) for key in
                         ("checkout", "lease", "db", "thread_wait", "thread_run", "bridge", "thread_calls", "lag", "app")} if p else {},
+            "pool_available_before_checkout": percentiles([row["pool_available"] for row in p
+                                                          if "pool_available" in row]),
+            "pool_waiting_before_checkout": percentiles([row["pool_waiting"] for row in p
+                                                        if "pool_waiting" in row]),
+            "sql_by_group_ms": {group: percentiles([row["queries"].get(group, [0, 0])[1] for row in p])
+                                for group in sorted({key for row in p for key in row["queries"]})},
             "queries_p50": median(sum(v[0] for v in row["queries"].values()) for row in p) if p else None,
             "resume_residual_ms": percentiles([max(0, row["bridge"] - row["thread_wait"] - row["thread_run"]) for row in p]),
         }
     complete = sum(item["count"] for item in groups.values())
+    in_window = sum(row["in_window"] for row in samples_by_completion)
     return {"users": args.users, "seconds": args.seconds, "rate": args.rate, "mix": args.workload,
             "offered": stats["offered"], "late_or_busy": stats["missed"], "completed": complete,
-            "valid": sum(item["valid"] for item in groups.values()), "completed_rps": complete / args.seconds,
+            "valid": sum(item["valid"] for item in groups.values()), "completed_rps": in_window / args.seconds,
+            "completed_in_window": in_window, "completed_in_drain": complete - in_window,
+            "window_monotonic": [start, stop],
+            "missed_by_operation": missed_by_operation,
             "driver_loop_lag_ms": percentiles(stats["loop_ms"]), "groups": groups}
 
 
@@ -318,10 +416,19 @@ def main():
     parser.add_argument("--seconds", type=int, required=True)
     parser.add_argument("--raw", type=Path, required=True)
     parser.add_argument("--rate", type=float)
+    parser.add_argument("--trace", action="store_true")
+    parser.add_argument("--socket-stagger", type=float, default=0.003)
     parser.add_argument("--seed", type=int, default=40)
     parser.add_argument("--workload", default="mixed")
+    parser.add_argument("--wire-timing", action="store_true")
     args = parser.parse_args()
-    print(json.dumps(asyncio.run(run(args, json.loads(args.identities.read_text(encoding="utf-8"))))))
+    identities = json.loads(args.identities.read_text(encoding="utf-8"))
+    if not 1 <= args.users <= len(identities) or args.seconds <= 0 or (args.rate is not None and args.rate <= 0):
+        parser.error("Use a positive duration and rate, and a user count within the seeded population.")
+    if args.wire_timing:
+        args.trace = True
+        instrument_client_pool()
+    print(json.dumps(asyncio.run(run(args, identities))))
 
 
 if __name__ == "__main__":

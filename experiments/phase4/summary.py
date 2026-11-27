@@ -14,8 +14,11 @@ def read_samples(path):
         return [json.loads(line) for line in file]
 
 
-def resource_summary(path):
+def resource_summary(path, window=None):
     samples = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+    if window is not None and all("monotonic" in row for row in samples):
+        samples = [{**row, "elapsed": row["monotonic"] - window[0]}
+                   for row in samples if window[0] <= row["monotonic"] <= window[1]]
     output = {"connection_peak": max((sum(row["connections"].values()) for row in samples), default=0)}
     for name in ("app", "postgres", "driver", "provider"):
         populations = {}
@@ -56,7 +59,7 @@ def results(root):
             sample = json.loads(summary.read_text(encoding="utf-8-sig"))
             timings = read_samples(entry)
             overall = percentiles([row["ms"] for row in timings])
-            resources = resource_summary(folder / f"{stem}-resources.jsonl")
+            resources = resource_summary(folder / f"{stem}-resources.jsonl", sample.get("window_monotonic"))
             yield {"trial": folder.name + "/" + stem, **sample, "overall_ms": overall,
                    "resources": resources, "observed_body_mismatches": sum(
                        bool(row["status"] in {101, 200, 201, 204} and not row["valid"]) for row in timings)}

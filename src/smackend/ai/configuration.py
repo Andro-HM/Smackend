@@ -29,6 +29,7 @@ def configure(settings, environment, *, production):
     except (TypeError, ValueError):
         raise ImproperlyConfigured("Supply valid SMACKEND_AI_MODELS and SMACKEND_AI_QUOTAS JSON objects.") from None
     models = {"offline": (MockAdapter(), "offline", MockAdapter.supported, None)}
+    http_config = {}
     for alias, entry in entries.items():
         if (not re.fullmatch(r"[a-z][a-z0-9_-]{0,49}", alias) or alias == "offline" or not isinstance(entry, dict)
                 or set(entry) - {"adapter", "provider", "model", "capabilities", "prefix", "price", "replay_429"}):
@@ -62,6 +63,8 @@ def configure(settings, environment, *, production):
                                       any(type(rate) is not int or not 0 <= rate <= 10**12 for rate in price)):
                 raise ValueError
             models[alias] = (adapter, entry["model"], capabilities, price)
+            if definition in adapters and adapter.transport is None:
+                http_config[alias] = (entry["provider"], adapter.provider)
         except (KeyError, ValueError, TypeError, AttributeError, ImportError):
             raise ImproperlyConfigured(
                 f"AI model {alias} needs a valid configured HTTP provider, adapter, model and capability set.",
@@ -70,11 +73,14 @@ def configure(settings, environment, *, production):
     if demo and (demo not in models or "text" not in models[demo][2]):
         raise ImproperlyConfigured("SMACKEND_AI_DEMO_MODEL must name a configured text model or be empty.")
     settings.update(SMACKEND_AI_CONFIG=models, SMACKEND_AI_QUOTA_CONFIG=quotas, SMACKEND_AI_DEMO_MODEL=demo)
+    settings["SMACKEND_AI_HTTP_CONFIG"] = http_config
     settings["INSTALLED_APPS"] += ["smackend.ai"]
 
 
 def configured_service():
     from django.conf import settings
+
+    from smackend.outbound.asgi import ai_clients
 
     from .ledger import Quota
     from .service import Model, Service, Tariff
@@ -82,6 +88,6 @@ def configured_service():
     models = {alias: Model(name, adapter, caps, Tariff(*price) if price is not None else None)
               for alias, (adapter, name, caps, price) in settings.SMACKEND_AI_CONFIG.items()}
     quotas = settings.SMACKEND_AI_QUOTA_CONFIG
-    return Service(models, user_quota=Quota(**quotas.get("user", {})),
+    return Service(models, clients=ai_clients(), user_quota=Quota(**quotas.get("user", {})),
                    app_quota=Quota(**({"requests": 1000, "concurrent": 20, "tokens": 2_500_000}
                                      | quotas.get("app", {}))))

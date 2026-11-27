@@ -218,3 +218,201 @@ Keep `0.1.0a8` as an alpha. Local verification supports installation, modular st
 ## Publication references
 
 The [changelog](CHANGELOG.md) records the a8 changes. The [roadmap](ROADMAP.md#alpha-release-qualification) carries the remaining gates forward. The [contributor guide](CONTRIBUTING.md) lists the test environment variables.
+
+
+## a9 final qualification follow-up
+
+The a9 checks use the installed wheel and the revised measurement harness.
+The [a8 evidence above](#evidence-and-scope) and the
+[a9 Windows remediation evidence](PHASE_4_OPTIMIZATION.md) remain separate
+historical runs. This follow-up introduces only qualification fixtures.
+The [sanitized summaries](experiments/phase4/a9-qualification-results.json)
+contain the wheel fingerprint, platform details, workload counts and
+sampled resources.
+
+### Reference setup required
+
+Use a dedicated Linux x86-64 app/database host constrained to the
+original shared four-vCPU and 8 GiB envelope, and a separate Linux
+driver host on the reference LAN. Run the simulator away from the
+measured app/database host. Record resource limits, CPU model,
+versions, driver hashes, ingress configuration, per-worker pool
+statistics and offered versus completed traffic. Use a PostgreSQL 17
+server with a 50-connection cap, two Uvicorn workers, eight application
+pool connections per worker, 1,000 synthetic principals and 100,000
+owned rows. Leave capacity for management and overlap connections.
+The independent driver needs the private synthetic fixture manifest,
+a trust store for the test CA and sufficient CPU/network capacity,
+verified with the same simulator and traffic schedule.
+
+On the target Linux host install Docker Engine and its Compose v2 plugin.
+From a fresh a9-generated project directory:
+
+```bash
+docker compose version
+docker compose config --quiet
+docker compose up -d --wait postgres
+uv run python manage.py migrate --noinput
+uv run smackend verify
+uv run python -m uvicorn config.asgi:application --host 127.0.0.1 --port 8000 --workers 2 --lifespan on --forwarded-allow-ips 127.0.0.1 --ws-max-size 4096 --ws-max-queue 8 --no-access-log
+```
+
+Install the a9 wheel with its selected extras by placing the wheel on
+the Linux host and using a clean environment. Set the generated
+project's database, secret, host and origin values privately. When a9
+is installed from a local wheel, put it in an absolute local wheel
+directory and export `UV_FIND_LINKS` pointing to that directory before
+using the generated project's `uv run` commands. The
+reference Compose server must be configured to serve TLS and the app
+must use `POSTGRES_SSLMODE=verify-full` with the issuer certificate path.
+Provide a trusted HTTPS/WSS ingress with an exact origin/host policy,
+forwarded header overwrites, upload and frame limits, a WebSocket
+upgrade path and SSE buffering disabled. Set
+`DJANGO_TRUST_PROXY_SSL_HEADER=true` only with a private backend listener
+and a trusted forwarding policy. Run browser cookie, CSRF, Origin and
+WebSocket tests from the reference host or LAN. Rotate the test
+certificate during traffic and verify reconnect and trust behavior.
+
+For persistence, write a database record and a private file through
+the app, recreate only the PostgreSQL service with
+`docker compose up -d --wait --force-recreate postgres`, and verify
+both through the same signed-in session. Keep the named database volume
+and the separately mounted media directory. If deploying the app in a
+container, also recreate the app container with the same media mount.
+Exercise backup and restore to a separate project and volume.
+
+Schedule the independent main test for 30 minutes with 50 simultaneous
+authenticated duplex sessions, 25 owner-scoped database operations
+per second and five admitted logins per second. Independently run the
+100-user closed-loop soak and the 500-socket gate. The built-in socket
+lifetime is capped at 600 seconds. A 30-minute concurrency test requires
+planned, authenticated reconnects with enough overlap to maintain the
+target occupancy. Continuous 30-minute single connections are outside
+the a9 policy. Record connection lifetime, healthy RTT and reconnect
+gaps separately. Use a diversified synthetic login address and account
+population that respects production admission policies. Register all
+expected test denials separately from failures.
+
+Live qualification needs explicit test credentials and endpoint
+configuration for the selected OAuth, email, SMS, object storage,
+model and voice providers, an approved test budget, and representative
+browser audio and interruption checks. Keep any real credentials out
+of the repository, benchmark telemetry and process arguments.
+
+
+### Local Linux diagnostics
+
+Ubuntu WSL2 (kernel 6.6.87.2), Python 3.12.3, a PostgreSQL 17.11
+disposable native server, two Uvicorn workers and the installed
+`0.1.0a9` wheel ran on one host. The machine exposed 12 logical
+CPUs and 7.6 GiB to Linux. These are local diagnostic measurements.
+The workload server, simulator and load driver shared the WSL host.
+The database bundle came from the [Zonky embedded binaries project](https://github.com/zonkyio/embedded-postgres-binaries).
+
+| Diagnostic | Result | Interpretation |
+|---|---|---|
+| Protected CRUD at 25/s, 12 s | 300/300 valid. Read/write/aggregate p95 59.8/60.4/60.0 ms. | Below the numerical latency targets on this host. |
+| Isolated login, 5/s for 12 s | 60/60 valid. p95 156 ms. | The single-source IP allowance was raised to 400/min for the synthetic test. |
+| Fan-out, 25/s for 10 s | 250/250 valid, 246 within the offered window. p95 171 ms. | Local fixed-delay simulator with worker-owned HTTP clients. |
+| 100 persistent sockets, 15 s | 800 valid echoes. p95 29.9 ms. | Short loopback hold. |
+| 500 sockets, 25 s and 40 s | 6,129 and 9,647 valid echoes. Full-window p95 121.5 and 150.7 ms. | Both missed 100 ms. In the 40-second repeat, p95 was 411 ms in seconds 0–5 and 26.4 ms afterward. The repeat saw 500 distinct completed handshakes. |
+| Simultaneous fixed-rate, 20 s | 50 active calls at every occupancy sample. All 50,000 frames matched. All 500 CRUD operations and 100 logins succeeded. | One CRUD completion drained after the window. Read/write/aggregate p95 142/110/98 ms, login 342 ms, mock frame RTT 67 ms. This short run lacks a paired direct control for relay-added RTT. |
+| Overload at 250 CRUD/s for 15 s | 734 completions in-window, 459 during drain, 2,557 missed starts. Read p95 17.65 s. | The generator shed arrivals. This run does not establish an ingress or application rejection policy. |
+| Return to 25 CRUD/s after overload | 625/625 valid in-window. Read/write/aggregate p95 59.0/62.4/60.4 ms, close to pre-burst 60.1/62.7/59.3 ms. Read p95 was 59.9 ms in the first five seconds of the recovery probe. | Recovery after the driver drained on this topology. |
+
+The combined fixture schedules 25 CRUD and five login arrivals per
+second separately after all voice sockets report ready. It checks
+sequence-marked PCM and samples active occupancy. Repeat the diagnostic
+with the standard runner and `--users 1000 --auth-ip-budget 400 --managed-outbound
+--matrix persistent:500:40 fixed-mix:150:20 crud:100:12:25 crud:500:15:250 crud:100:25:25`.
+The diagnostic fixture supports windows up to 540 seconds because it
+keeps the initial voice sessions throughout. Both completed matrices
+passed ownership, acknowledged-write, aggregate, storage and final
+lease reconciliation. The repeat with 1,000 seeded users reconciled
+100,000 records and 1,000 private files. No runtime tuning was applied.
+
+
+### Local HTTPS, WSS, persistence and failure probes
+
+The installed wheel generated a fresh project, migrated PostgreSQL,
+and passed all six `smackend verify` steps. A private disposable TLS
+issuer verified the PostgreSQL connection and rejected the wrong
+hostname. The loopback HTTPS proxy exercised secure cookie attributes
+and CSRF rejection. A separate direct Uvicorn TLS listener proved WSS
+with the same PostgreSQL session authority. These are distinct
+listeners. The HTTP probe proxy does not proxy WebSocket upgrades.
+
+- Replacing a deliberately killed worker took 205 ms. Eight background
+  private downloads in that phase returned the expected contents.
+- The 30-second PostgreSQL interruption produced 25 liveness/readiness
+  pairs of 200/503. Four concurrent authenticated download loops saw
+  122 responses with 503 and ten correct responses after recovery in
+  that phase. Readiness returned 3.82 s after PostgreSQL started.
+  The committed write survived and the interrupted uncommitted write
+  rolled back.
+- The authenticated WSS probe continued submitting echoes while
+  PostgreSQL session revocation was committed. The last echo was received
+  1.95 s after commit, the socket closed with code 4403 in 2.00 s, and
+  reconnect returned 403. Concurrent HTTPS downloads used separate app
+  workers and the same database. This is a small-sample local check of
+  the five-second deadline.
+- A PostgreSQL custom-format dump and copied file storage restored into
+  separate locations. The existing session retrieved the restored
+  private file and profile.
+
+Docker Engine and Compose v2 were absent on Windows and in Ubuntu WSL2.
+No independent load host or live credentials were provided. Production
+TLS ingress, browser HTTPS/WSS, Compose recreation and live providers
+remain qualification gates. These tests used synthetic accounts,
+files, provider responses and voice frames.
+
+
+### 100-user 30-minute soak
+
+The installed a9 wheel repeated the original closed-loop shape after a
+60-second warmup. The app exercised owner-scoped reads, writes and
+aggregates, session checks, private storage, fan-out, model requests and
+short SSE against synthetic providers. It completed **74,960 valid
+operations** with zero observed invalid outcomes. **74,907** completed
+in-window at **41.615 operations/s**, and **53** completed during drain.
+Closed-loop clients wait for each response, so the achieved rate is a
+description of this run. Independent open-loop admission is a separate gate.
+
+| Operation | Count | p95 | p99 | Original p95 target |
+|---|---:|---:|---:|---:|
+| Owned read | 33,904 | 3,706 ms | 5,828 ms | 250 ms |
+| Owned write | 11,231 | 3,762 ms | 5,716 ms | 500 ms |
+| Scoped aggregate | 7,498 | 3,582 ms | 5,676 ms | 750 ms |
+| Short SSE first event | 2,272 | 3,864 ms | 6,284 ms | 250 ms |
+
+The four latency targets in the table missed. Read p95 was above
+3.2 seconds in every five-minute segment. App peak sampled RSS was
+**229 MiB**, warmed-to-final median growth **0.55%**, and peak sampled
+database connections **15**. Those met the numerical resource gates
+locally. App, PostgreSQL and driver used approximately **1,169**, **114**
+and **520 CPU-seconds** respectively during the window. The driver
+heartbeat lag reached **106 ms p95**. Resource numbers are sampled
+process-tree RSS and can include shared pages.
+
+Reconciliation verified 100,000 owned records, 1,000 consistent private
+files, zero mismatched acknowledged writes and zero final socket leases.
+The long run used lightweight telemetry with no per-request server
+profiling. Its timings cannot distinguish ingress or client wait from
+application execution. The lower local tail versus the historical a8
+soak is descriptive because the PostgreSQL version, driver revision and
+host activity differ. No further runtime optimization was applied.
+
+To repeat the local soak, use the installed wheel on the disposable
+PostgreSQL 17 launcher with `--users 1000 --managed-outbound --matrix
+mixed:100:60 mixed:100:1800`. Keep the raw data and private seed material
+separate. For reference qualification, rerun the protected CRUD and
+mixed workload on independent hosts and capture matched ingress, ASGI,
+SQL, checkout and driver diagnostics in representative shorter windows.
+
+**Release decision.** Keep a9 as an alpha. The local 100-user and
+500-WebSocket runs missed latency thresholds. The 20-second fixed mixed
+result, isolated recovery and local TLS checks establish narrower
+behavior. The reference 30-minute fixed mixed and socket workloads,
+Docker Compose recreation, production ingress and browser HTTPS/WSS,
+recovery and revocation under the reference load, and live-provider
+qualification remain open.

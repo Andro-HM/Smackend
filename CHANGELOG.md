@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.0a9 — Performance remediation alpha
+
+- Added worker-owned async HTTP pools and a shared per-provider admission budget for outbound integrations and built-in AI adapters.
+- Corrected benchmark accounting and added protected route comparisons, correlated timing and integrity checks.
+- Passed 140 PostgreSQL regression tests, wheel and source installation smoke tests, and all six installed-project verification checks on WSL2 with PostgreSQL 17.11.
+- Demonstrated lower local fan-out, AI and first-event latency in the a8 comparison. The 100-user soak completed 74,960 valid operations and met sampled resource limits. Sustained CRUD, SSE first-event and 500-socket latency missed their targets.
+- Passed local PostgreSQL interruption, worker replacement, restore, HTTPS security and direct WSS revocation checks. The reference mixed-load, deployment and live-provider gates remain open.
+- Existing projects can enable managed outbound clients by wrapping their ASGI application and enabling lifespan. No toolkit migration is required. [Remediation report](PHASE_4_OPTIMIZATION.md) · [a9 qualification](PHASE_4.md#a9-final-qualification-follow-up)
+
 ## 0.1.0a8 — Qualification alpha
 
 - Updated ASGI identity middleware to keep ordinary requests on the async path while preserving account and session checks.

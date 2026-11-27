@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
+from http.cookiejar import CookieJar, DefaultCookiePolicy
 import json
 import logging
 from random import uniform
@@ -223,11 +224,18 @@ class Client:
             self._slots.release()
 
 
+class _RejectCookies(DefaultCookiePolicy):
+    def set_ok(self, cookie, request):
+        return False
+
+
 class AsyncClient:
-    def __init__(self, provider, *, transport=None):
+    def __init__(self, provider, *, transport=None, _shared_slots=None):
         self.provider = provider
         self._client = httpx.AsyncClient(**client_options(provider, transport))
-        self._slots = asyncio.Semaphore(provider.concurrency)
+        # Upstream cookies must never carry state from one application request to another.
+        self._client.cookies.jar = CookieJar(policy=_RejectCookies())
+        self._slots = _shared_slots if _shared_slots is not None else asyncio.Semaphore(provider.concurrency)
 
     async def __aenter__(self):
         return self
