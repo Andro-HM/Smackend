@@ -2,7 +2,7 @@
 
 Phase 0 is provisionally concluded. The [experiment and measured results](experiments/phase0/RESULTS.md), [original architecture](ARCHITECTURE.md), and [framework evaluation](FRAMEWORK_EVALUATION.md) remain the reference material.
 
-`0.1.0a9` is the current alpha. The [changelog](CHANGELOG.md), [a9 qualification](PHASE_4.md#a9-final-qualification-follow-up), and [original a8 evidence](PHASE_4.md#evidence-and-scope) record each checkpoint.
+`0.1.0a10` is the current alpha. The [changelog](CHANGELOG.md), [a9 qualification](PHASE_4.md#a9-final-qualification-follow-up), and [original a8 evidence](PHASE_4.md#evidence-and-scope) record each checkpoint.
 
 | Stage | Exit condition |
 |---|---|
@@ -13,6 +13,13 @@ Phase 0 is provisionally concluded. The [experiment and measured results](experi
 | **Phase 3 — AI and real-time** | Verify optional AI adapters, PostgreSQL admission and usage, authenticated Channels, per-connection voice, and combined scaffolds with deterministic providers. Qualify live model, billing, and voice behavior separately. |
 | **Later toolkit milestones** | Extend identity where consumer requirements justify it and add the remaining reusable modules with separate scopes and compatibility tests. |
 | **Phase 4 — Mandatory before the hackathon-ready release** | Alpha qualification exercises the toolkit on Windows PostgreSQL and on Ubuntu WSL2 with native PostgreSQL. The installed-package regression, module activation, consumer rehearsals, and isolated TLS/recovery checks passed. Local database Compose passed on Docker Desktop. Reference mixed-load, ingress and live-provider gates remain open. [Measured results](PHASE_4.md) |
+
+## Existing-project activation
+
+The a10 CLI can add all six existing modules to generated projects.
+The current upgrade path accepts an a9 pin explicitly and uses the
+existing project settings and module registry. See the
+[activation guide](PHASE_A10.md) for the migration and rollback boundary.
 
 ## Phase 0 backlog
 

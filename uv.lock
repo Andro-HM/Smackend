@@ -964,8 +964,11 @@ wheels = [
 
 [[package]]
 name = "smackend"
-version = "0.1.0a9"
+version = "0.1.0a10"
 source = { editable = "." }
+dependencies = [
+    { name = "python-dotenv" },
+]
 
 [package.optional-dependencies]
 ai = [
@@ -999,7 +1002,6 @@ storage = [
 dev = [
     { name = "django" },
     { name = "pytest" },
-    { name = "python-dotenv" },
 ]
 integration = [
     { name = "moto", extra = ["s3"] },
@@ -1019,6 +1021,7 @@ requires-dist = [
     { name = "jsonschema", marker = "extra == 'ai'", specifier = ">=4.25,<5" },
     { name = "pillow", marker = "extra == 'storage'", specifier = ">=13,<14" },
     { name = "psycopg", extras = ["binary", "pool"], marker = "extra == 'backend'", specifier = ">=3.3,<4" },
+    { name = "python-dotenv", specifier = "==1.2.4" },
     { name = "websockets", marker = "extra == 'realtime'", specifier = ">=15,<17" },
 ]
 provides-extras = ["backend", "auth", "storage", "s3", "http", "ai", "realtime"]
@@ -1027,7 +1030,6 @@ provides-extras = ["backend", "auth", "storage", "s3", "http", "ai", "realtime"]
 dev = [
     { name = "django", specifier = "==5.2.19" },
     { name = "pytest", specifier = ">=9,<10" },
-    { name = "python-dotenv", specifier = "==1.2.4" },
 ]
 integration = [
     { name = "moto", extras = ["s3"], specifier = "==5.2.6" },

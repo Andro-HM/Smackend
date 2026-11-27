@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0a10 — Existing-project module activation alpha
+
+- Added `smackend add` and `smackend status` for auth, storage, admin, HTTP, AI and real-time modules.
+- Added dry-run planning, explicit a9 upgrade, local-wheel discovery, managed migrations and configuration rollback before migration execution. [Activation guide](PHASE_A10.md)
+
 ## 0.1.0a9 — Performance remediation alpha
 
 - Added worker-owned async HTTP pools and a shared per-provider admission budget for outbound integrations and built-in AI adapters.

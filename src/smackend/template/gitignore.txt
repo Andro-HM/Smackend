@@ -6,3 +6,5 @@ __pycache__/
 !.env.example
 .smackend-media/
 staticfiles/
+
+.smackend-activation.lock

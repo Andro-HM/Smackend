@@ -1,6 +1,6 @@
 # Smackend
 
-**v0.1.0a9 · Alpha · Production qualification pending**
+**v0.1.0a10 · Alpha · Production qualification pending**
 
 Smackend is a reusable backend toolkit for Django, Django Ninja, and PostgreSQL. Its CLI generates a small project that imports shared infrastructure from the installed package. The generated application owns its settings, models, migrations, routes, permissions, and frontend.
 
@@ -44,16 +44,16 @@ Flags select settings, routes, and dependency extras at generation time. For an 
 
 Install Git, Python **3.11 or 3.12**, and [uv](https://docs.astral.sh/uv/getting-started/installation/). For the Compose quickstart, start Docker Desktop with Linux containers on Windows, or Docker Engine with the Compose plugin on Linux. An existing PostgreSQL instance is also usable. Port 55432 is the development database default, and the server example uses port 8000.
 
-Run the following in **Windows PowerShell** or a **Linux shell**. uv manages the virtual environment in either shell. These commands check out the GitHub a9 tag and build its wheel locally.
+Run the following in **Windows PowerShell** or a **Linux shell**. uv manages the virtual environment in either shell. These commands check out the GitHub a10 tag and build its wheel locally.
 
 ```sh
-git clone --branch v0.1.0a9 https://github.com/Andro-HM/Smackend.git
+git clone --branch v0.1.0a10 https://github.com/Andro-HM/Smackend.git
 cd Smackend
 uv build
 mkdir .local
 cd .local
-uv tool run --from ../dist/smackend-0.1.0a9-py3-none-any.whl smackend --version
-uv tool run --from ../dist/smackend-0.1.0a9-py3-none-any.whl smackend init private-notes --auth
+uv tool run --from ../dist/smackend-0.1.0a10-py3-none-any.whl smackend --version
+uv tool run --from ../dist/smackend-0.1.0a10-py3-none-any.whl smackend init private-notes --auth
 cd private-notes
 uv sync --find-links ../../dist --python 3.11
 docker compose up -d --wait postgres
@@ -64,7 +64,7 @@ uv run python -m uvicorn config.asgi:application --host 127.0.0.1 --port 8000 --
 
 Open the app at `http://127.0.0.1:8000/`, API docs at `/api/docs`, or the account page at `/account/`. Use `smackend init my-app` for a plain scaffold or `smackend init my-app --storage --admin --ai --realtime` for a combined example with offline features at `/assist/`. Use the same `uv tool run --from` prefix when running from a local wheel. Choose one initialization command for a new project directory. Add business models and routes in the generated project.
 
-Install the CLI from an existing local wheel with `uv tool install ./dist/smackend-0.1.0a9-py3-none-any.whl`, then run `smackend init my-app`. When syncing the generated app, point `--find-links` to the directory containing that wheel. The CLI also works with a local source distribution.
+Install the CLI from an existing local wheel with `uv tool install ./dist/smackend-0.1.0a10-py3-none-any.whl`, then run `smackend init my-app`. When syncing the generated app, point `--find-links` to the directory containing that wheel. The CLI also works with a local source distribution.
 
 ## Configuration and database
 
@@ -112,15 +112,26 @@ In a generated app, `uv run smackend verify` checks configuration, Django, Postg
 | [`experiments/phase4/`](experiments/phase4/) | Qualification harness and sanitized measurements |
 | [`pyproject.toml`](pyproject.toml) and [`uv.lock`](uv.lock) | Package metadata and reproducible dependencies |
 
-## Upgrading from a8
+## Add modules to an existing project
 
-Update the Smackend dependency pin to `0.1.0a9` and sync the generated
-app against the new wheel. For existing outbound or AI integrations,
-wrap the final Django or Channels application with `with_outbound` and
-enable ASGI lifespan to share clients across requests. Managed admission
-limits apply per named provider per worker. Explicit client ownership
-is still supported. This release requires no toolkit schema migration.
-[Upgrade instructions](PHASE_4_OPTIMIZATION.md#outbound-http-lifecycle)
+Run the a10 CLI from the generated project directory, alongside
+`manage.py` and `pyproject.toml`.
+
+```powershell
+smackend status
+smackend add auth
+smackend add ai storage --dry-run
+smackend add ai storage
+```
+
+Use `smackend add --upgrade` to change an existing a9 pin explicitly,
+with module names on the same command if desired. For a local wheel,
+pass `--find-links` with its directory when discovery needs help. The
+command enables module dependencies, preserves project code and secrets,
+installs dependencies with uv, and runs Django checks. Managed migrations
+run when PostgreSQL is available and application migrations do not need
+review. A pending message includes the next step. Restart running app
+processes after activation. [Activation, upgrade and recovery guide](PHASE_A10.md)
 
 ## Alpha qualification
 
