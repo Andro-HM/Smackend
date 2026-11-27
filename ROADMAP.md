@@ -12,7 +12,7 @@ Phase 0 is provisionally concluded. The [experiment and measured results](experi
 | **Phase 2B–2E — Optional modules** | Verify managed storage, native administration, outbound HTTP, consistent opt-in configuration, and the combined application upgrade. Qualify live provider services separately. |
 | **Phase 3 — AI and real-time** | Verify optional AI adapters, PostgreSQL admission and usage, authenticated Channels, per-connection voice, and combined scaffolds with deterministic providers. Qualify live model, billing, and voice behavior separately. |
 | **Later toolkit milestones** | Extend identity where consumer requirements justify it and add the remaining reusable modules with separate scopes and compatibility tests. |
-| **Phase 4 — Mandatory before the hackathon-ready release** | Alpha qualification exercises the toolkit on Windows PostgreSQL and on Ubuntu WSL2 with native PostgreSQL. The installed-package regression, module activation, consumer rehearsals, and isolated TLS/recovery checks passed. Reference mixed-load, Docker and live-provider gates remain open. [Measured results](PHASE_4.md) |
+| **Phase 4 — Mandatory before the hackathon-ready release** | Alpha qualification exercises the toolkit on Windows PostgreSQL and on Ubuntu WSL2 with native PostgreSQL. The installed-package regression, module activation, consumer rehearsals, and isolated TLS/recovery checks passed. Local database Compose passed on Docker Desktop. Reference mixed-load, ingress and live-provider gates remain open. [Measured results](PHASE_4.md) |
 
 ## Phase 0 backlog
 
@@ -32,14 +32,14 @@ Keep the Phase 0 Windows numbers as a diagnostic baseline. They describe the wor
 
 - **Passed locally.** The installed a8 wheel and source regressions, the upgrade preserving an existing session and private file, all 26 distinct activation profiles, three consumer extensions, and the isolated Linux recovery and restore probe passed.
 - **Security remediation.** The storage extra uses Pillow 13 and restricts decoder selection to configured input formats. Keep scanning the exact deployed dependency set and its native libraries.
-- **Open.** Qualify full reference performance with a separate load generator, the PostgreSQL 17 Compose profile and production ingress, sustained real-time and mixed traffic, larger media and stress behavior, live providers, and direct Google registration. Keep the original performance criteria.
+- **Open.** Qualify full reference performance with a separate load generator, the reference PostgreSQL TLS profile and production ingress, sustained real-time and mixed traffic, larger media and stress behavior, live providers, and direct Google registration. Keep the original performance criteria.
 
 | Gate | Status and next evidence |
 |---|---|
 | 4.1 Baseline | Installed-toolkit Windows and WSL2 baselines and raw timelines retained. Move the load generator off-host for reference qualification. |
 | 4.2–4.4 Performance | Local middleware, pool, worker and outbound lifecycle comparisons ran. Worker-owned HTTP reuse met the isolated fan-out target. The 30-minute 100-user run met resource limits and missed latency. Repeat the reference mixed workload and real-time capacity runs under the specified envelope. |
 | 4.5 Security and reliability | Storage dependency and decoder remediation passed regression. Cross-process AI spending containment and disposable database failure checks passed. Close the stressed session-revocation, high-load failure and native dependency qualification gaps. |
-| 4.6 Deployment | Native WSL2, verified PostgreSQL TLS, HTTP proxy cookies, worker replacement and backup/restore passed locally. The a9 wheel also passed on native PostgreSQL 17.11 within WSL2. Qualify Compose, production ingress and browser HTTPS/WSS on the reference setup. |
+| 4.6 Deployment | Native WSL2, verified PostgreSQL TLS, HTTP proxy cookies, worker replacement and backup/restore passed locally. The a9 wheel also passed on native PostgreSQL 17.11 within WSL2. Local Docker Desktop passed the PostgreSQL 17 Compose gate with two projects, volume reuse and automatic backend recovery. Qualify the reference PostgreSQL TLS and ingress configuration and browser HTTPS/WSS. |
 | 4.7 Live providers | Simulated only. Real delivery, storage, OAuth, model, voice and billing tests require approved providers and test credentials. Direct Google registration remains outstanding. |
 | 4.8 Consumer rehearsal | Three installed-package applications and wildcard extensions passed. Verification detected broken ownership and session handling. A human-timed rehearsal remains open. |
 | 4.9 Release | Wheel, source, upgrade and activation checks passed locally. Maintain the alpha designation until the mandatory performance, deployment, provider and recovery gates pass. |
@@ -74,7 +74,14 @@ The [qualification follow-up](PHASE_4.md#a9-final-qualification-follow-up)
 records the measured scope and reference setup. Remaining mandatory gates
 include an independent driver and simulator on the reference Linux envelope,
 30-minute fixed mixed and 500-socket workloads with bounded reconnect and
-revocation, Docker Compose volume and app recreation, production HTTPS/WSS,
+revocation, reference PostgreSQL TLS, production HTTPS/WSS,
 browser security checks, recovery under full mixed load, and live providers.
 Keep the original per-route latency, throughput, correctness and resource
 targets.
+
+
+Local database Compose qualification is complete for the a9 wheel on
+Docker Desktop. Both independent projects retained records and sessions
+after container recreation. A stopped database interrupted one app and
+the other stayed available. See the
+[local Docker evidence](PHASE_4.md#local-docker-desktop-qualification).

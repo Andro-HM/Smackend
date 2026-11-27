@@ -360,11 +360,12 @@ listeners. The HTTP probe proxy does not proxy WebSocket upgrades.
   separate locations. The existing session retrieved the restored
   private file and profile.
 
-Docker Engine and Compose v2 were absent on Windows and in Ubuntu WSL2.
-No independent load host or live credentials were provided. Production
-TLS ingress, browser HTTPS/WSS, Compose recreation and live providers
-remain qualification gates. These tests used synthetic accounts,
-files, provider responses and voice frames.
+Docker Engine and Compose were unavailable during these WSL2 tests.
+The subsequent [local Docker Desktop check](#local-docker-desktop-qualification)
+covers database container recreation. This WSL2 run used synthetic
+accounts, files, provider responses and voice frames. Independent load,
+production TLS ingress, browser HTTPS/WSS and live providers remain
+qualification gates.
 
 
 ### 100-user 30-minute soak
@@ -416,3 +417,44 @@ behavior. The reference 30-minute fixed mixed and socket workloads,
 Docker Compose recreation, production ingress and browser HTTPS/WSS,
 recovery and revocation under the reference load, and live-provider
 qualification remain open.
+
+
+### Local Docker Desktop qualification
+
+The published a9 wheel ran on the Windows host with Docker Desktop
+4.100.1, its WSL2 Linux engine 29.9.3, and Compose 5.7.1. The
+generated Compose files passed `docker compose config --quiet`.
+Only PostgreSQL ran in containers. The two disposable projects used
+the generated `postgres:17.9` image
+(`sha256:2a0d0fe14825b0939f78a8cad5cd4e6aa68bf94d0e5dd96e24b6d23af4315545`),
+distinct Compose names, loopback database and HTTP ports, database
+names, database roles, passwords and named volumes. Python served the
+unchanged installed package through Uvicorn.
+
+- Both projects applied the native migrations and the migrations for a
+  disposable owner-scoped CRUD fixture. Signup, login, CSRF, list,
+  create, update, delete and scoped aggregates passed. A second account
+  could neither list nor delete the first account's records. Cross-project
+  passwords, session cookies and PostgreSQL credentials were rejected.
+- Both databases passed restart and forced recreation. Forced
+  recreation produced new container IDs with the original volumes.
+  Existing records and the original authenticated sessions survived.
+- During a deliberate stop of one container, three samples each
+  returned HTTP 200 for liveness and 503 for readiness and authenticated
+  queries. The peer app continued serving authenticated queries. Starting
+  the container restored access from the same Python process and session
+  in 750 ms, measured from issuing `docker compose start postgres`.
+
+All six `smackend verify` checks passed in each generated app. The
+focused suite passed **86 tests**, covering scaffolding, configuration,
+the generated PostgreSQL app, transactions, worker behavior and identity.
+The native restart probe was deselected because the container tests
+covered restart and recreation directly. The disposable projects,
+containers, networks and volumes were removed. The shared PostgreSQL
+image remains cached.
+
+This closes the **local database Compose** gate. Independent-load
+qualification, reference Linux deployment with PostgreSQL TLS,
+production HTTPS/WSS and live providers remain open. The original
+performance targets continue to apply.
+[Local Docker commands](README.md#running-multiple-local-projects-with-docker)

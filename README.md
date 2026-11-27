@@ -72,6 +72,33 @@ Initialization generates a private `.env` with development secrets and a safe `.
 
 For an existing PostgreSQL instance, set `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, and `POSTGRES_PORT`, then continue from `manage.py migrate`. The database must exist and admit the configured role. Use a disposable database server and a database-creating role for the full verification suite. The Compose database uses a named volume. Review `manage.py migrate --plan` before applying changes to an existing database. Use ordinary `makemigrations`, `migrate`, and `test` commands. Production settings require deployment-specific hosts, secrets, HTTPS, and PostgreSQL TLS verification. [Generated configuration guide](src/smackend/template/README.md) · [Phase 1](PHASE_1.md)
 
+### Running multiple local projects with Docker
+
+Run Compose from each generated project's own directory. Use distinct
+directory names so Compose assigns each project its own network and
+`postgres_data` volume. Before the first startup, set a free
+`POSTGRES_PORT` in each project's private `.env`, for example 55432
+and 55433. Keep the generated passwords and Django secrets distinct.
+Use a different host HTTP port for each Python process. Use separate
+browser profiles if both apps use `127.0.0.1`. Browser cookies are
+scoped by host and shared across HTTP ports on that host.
+
+```sh
+docker compose config --quiet
+docker compose up -d --wait postgres
+uv run python manage.py migrate --noinput
+uv run smackend verify
+```
+
+Use `docker compose stop postgres` to pause the database and
+`docker compose up -d --wait postgres` to bring it back. Use
+`docker compose up -d --wait --force-recreate postgres` to replace its
+container while retaining the named volume. A normal `docker compose
+down` retains that volume. Reserve `down --volumes` for disposable
+data. PostgreSQL uses the `.env` database, role and password to
+initialize a fresh volume. Changing those values later requires a
+database-side change before reconnecting the app.
+
 ## Verification and repository layout
 
 In a generated app, `uv run smackend verify` checks configuration, Django, PostgreSQL connectivity, migration drift, applied migrations, and application tests. From the toolkit checkout, `uv sync --locked --no-editable --all-extras --group integration` and `uv run --no-sync python -m pytest` run the toolkit suite. PostgreSQL integration tests require the smoke variables described in [CONTRIBUTING.md](CONTRIBUTING.md). [Verification contract](PHASE_1.md#automated-verification)
@@ -102,7 +129,10 @@ plus wheel and source-install scaffolding checks. The installed wheel
 also passed all six `smackend verify` checks on Ubuntu WSL2 with
 PostgreSQL 17.11. Local checks covered HTTPS cookies and CSRF, direct
 WSS session revocation, worker replacement, PostgreSQL interruption,
-and restore of a private file and database.
+and restore of a private file and database. A later Docker Desktop
+run verified two simultaneous PostgreSQL 17.9 Compose projects,
+including session and data persistence through container recreation
+and recovery after a database stop.
 
 | Local observation | Result |
 |---|---|
@@ -113,12 +143,13 @@ and restore of a private file and database.
 | WSL2 real-time | The 40-second, 500-socket test returned 9,647 valid echoes and missed the 100 ms p95 target at 151 ms. The 20-second mixed test held 50 mock duplex calls, matched all 50,000 frames, and completed 500 CRUD operations and 100 logins. |
 
 These shared-host tests used synthetic providers. The independent-load
-reference runs, sustained mixed and socket gates, Compose recreation,
+reference runs, sustained mixed and socket gates, reference PostgreSQL TLS,
 production HTTPS/WSS, browser checks, mixed-load recovery and revocation,
 and live-provider qualification remain open. Direct Google registration
 is still outstanding. Real-time support is point-to-point.
 [Remediation results](PHASE_4_OPTIMIZATION.md) ·
 [a9 qualification](PHASE_4.md#a9-final-qualification-follow-up) ·
+[Local Docker qualification](PHASE_4.md#local-docker-desktop-qualification) ·
 [Roadmap](ROADMAP.md)
 
 ## Documentation
